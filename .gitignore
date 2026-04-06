@@ -1,0 +1,35 @@
+# ===== Unity =====
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+
+*.pdb
+*.mdb
+
+*.opendb
+*.VC.db
+
+.DS_Store
+Thumbs.db
+
+# ===== RL / Training =====
+results/
+runs/
+logs/
+
+*.pt
+*.pth
+
+*.tfevents*
