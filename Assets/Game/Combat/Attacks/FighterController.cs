@@ -53,6 +53,8 @@ public class FighterController : MonoBehaviour
     private CharacterState lastState;
     private AttackPhase lastAttackPhase;
 
+    public string attackName;
+
     public bool FacingRight => motor != null && motor.FacingRight;
     public bool IsGrounded => motor != null && motor.IsGrounded;
     public bool IsDashing => motor != null && motor.IsDashing;
@@ -118,13 +120,13 @@ public class FighterController : MonoBehaviour
 
         if (CurrentState != lastState)
         {
-            Debug.Log("State: " + CurrentState);
+            DLog.Log("State: " + CurrentState);
             lastState = CurrentState;
         }
 
         if (CurrentAttackPhase != lastAttackPhase)
         {
-            Debug.Log("Attack Phase: " + CurrentAttackPhase);
+            DLog.Log("Attack Phase: " + CurrentAttackPhase);
             lastAttackPhase = CurrentAttackPhase;
         }
     }
@@ -180,18 +182,22 @@ public class FighterController : MonoBehaviour
 
     public void StartAttack(AttackData attackData)
     {
-        if (combat != null)
+        if (combat != null){
+            DLog.Log($"{name} StartAttack: {attackData.attackName}");
             combat.StartAttack(attackData);
+        }
     }
 
     public void RequestLightAttack()
     {
+        DLog.Log($"{name} RequestLightAttack received by FighterController");
         if (combat != null)
             combat.RequestLightAttack();
     }
 
     public void RequestHeavyAttack()
     {
+        DLog.Log($"{name} RequestHeavyAttack received by FighterController");
         if (combat != null)
             combat.RequestHeavyAttack();
     }

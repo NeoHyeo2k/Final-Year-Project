@@ -237,7 +237,7 @@ public class CharacterStateMachine : MonoBehaviour
         blockstunTimer = 0f;
         hitstunTimer = duration;
 
-        Debug.Log(gameObject.name + " entered Hitstun for " + duration + " seconds.");
+        DLog.Log(gameObject.name + " entered Hitstun for " + duration + " seconds.");
     }
 
     public void ReceiveBlockstun(float duration)
@@ -258,7 +258,7 @@ public class CharacterStateMachine : MonoBehaviour
         isCrouching = false;
         blockstunTimer = duration;
 
-        Debug.Log(gameObject.name + " entered Blockstun for " + duration + " seconds.");
+        DLog.Log(gameObject.name + " entered Blockstun for " + duration + " seconds.");
     }
 
     public bool CanBlockAttack(AttackData attackData)

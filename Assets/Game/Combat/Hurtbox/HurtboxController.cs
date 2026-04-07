@@ -27,17 +27,17 @@ public class HurtboxController : MonoBehaviour
 
         if (ownerController == null)
         {
-            Debug.LogError("FighterController not found in parent of " + gameObject.name);
+            DLog.LogError("FighterController not found in parent of " + gameObject.name);
         }
 
         if (ownerHealth == null)
         {
-            Debug.LogError("Health not found in parent of " + gameObject.name);
+            DLog.LogError("Health not found in parent of " + gameObject.name);
         }
 
         if (hurtboxCollider == null)
         {
-            Debug.LogError("Collider2D not found on hurtbox " + gameObject.name);
+            DLog.LogError("Collider2D not found on hurtbox " + gameObject.name);
         }
     }
 

@@ -13,12 +13,12 @@ public class AttackInput : MonoBehaviour
 
         if (controller == null)
         {
-            Debug.LogError("FighterController not found on " + gameObject.name);
+            DLog.LogError("FighterController not found on " + gameObject.name);
         }
 
         if (hitboxObject == null)
         {
-            Debug.LogError("Hitbox object is not assigned on " + gameObject.name);
+            DLog.LogError("Hitbox object is not assigned on " + gameObject.name);
             return;
         }
 
@@ -26,7 +26,7 @@ public class AttackInput : MonoBehaviour
 
         if (hitboxCollider == null)
         {
-            Debug.LogError("BoxCollider2D not found on hitboxObject: " + hitboxObject.name);
+            DLog.LogError("BoxCollider2D not found on hitboxObject: " + hitboxObject.name);
         }
 
         hitboxObject.SetActive(false);

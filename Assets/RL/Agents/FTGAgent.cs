@@ -19,7 +19,9 @@ public class FTGAgent : Agent
 
     [Header("Reward")]
     public float stepPenalty = 0f;
-    // public float stepPenalty = -0.0005f;
+
+    [Header("Debug")]
+    public bool debugActionReceived = false;
 
     private bool episodeEnding = false;
 
@@ -32,13 +34,13 @@ public class FTGAgent : Agent
             selfController = GetComponent<FighterController>();
 
         if (observationProvider == null)
-            Debug.LogError($"{name}: FTGAgent missing CombatObservationProvider reference.");
+            DLog.LogError($"{name}: FTGAgent missing CombatObservationProvider reference.");
 
         if (matchManager == null)
-            Debug.LogError($"{name}: FTGAgent missing MatchManager reference.");
+            DLog.LogError($"{name}: FTGAgent missing MatchManager reference.");
 
         if (agentInput == null)
-            Debug.LogError($"{name}: FTGAgent missing AgentInput reference.");
+            DLog.LogError($"{name}: FTGAgent missing AgentInput reference.");
     }
 
     public override void OnEpisodeBegin()
@@ -52,7 +54,7 @@ public class FTGAgent : Agent
 
         if (agentInput != null)
         {
-            agentInput.SetDiscreteAction(0);
+            agentInput.SetBranchActions(0, 0, 0);
         }
     }
 
@@ -77,23 +79,28 @@ public class FTGAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        Debug.Log("OnActionReceived called: " + actions.DiscreteActions[0]);
-
         if (episodeEnding)
             return;
 
         if (matchManager == null || !matchManager.RoundActive)
         {
             if (agentInput != null)
-                agentInput.SetDiscreteAction(0);
+                agentInput.SetBranchActions(0, 0, 0);
             return;
         }
 
-        int actionId = actions.DiscreteActions[0];
+        int moveAction = actions.DiscreteActions[0];
+        int postureAction = actions.DiscreteActions[1];
+        int combatAction = actions.DiscreteActions[2];
+
+        if (debugActionReceived)
+        {
+            DLog.Log($"OnActionReceived => move:{moveAction}, posture:{postureAction}, combat:{combatAction}");
+        }
 
         if (agentInput != null)
         {
-            agentInput.SetDiscreteAction(actionId);
+            agentInput.SetBranchActions(moveAction, postureAction, combatAction);
         }
 
         AddReward(stepPenalty);
@@ -104,7 +111,15 @@ public class FTGAgent : Agent
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var discrete = actionsOut.DiscreteActions;
+
+        // move: 0 neutral, 1 left, 2 right
         discrete[0] = 0;
+
+        // posture: 0 none, 1 jump, 2 crouch
+        discrete[1] = 0;
+
+        // combat: 0 none, 1 block, 2 light, 3 heavy
+        discrete[2] = 0;
 
         if (Input.GetKey(KeyCode.A))
         {
@@ -114,25 +129,27 @@ public class FTGAgent : Agent
         {
             discrete[0] = 2;
         }
-        else if (Input.GetKeyDown(KeyCode.W))
+
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            discrete[0] = 3;
+            discrete[1] = 1;
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            discrete[0] = 4;
+            discrete[1] = 2;
         }
-        else if (Input.GetKey(KeyCode.LeftShift))
+
+        if (Input.GetKey(KeyCode.LeftShift))
         {
-            discrete[0] = 5;
+            discrete[2] = 1;
         }
         else if (Input.GetKeyDown(KeyCode.J))
         {
-            discrete[0] = 6;
+            discrete[2] = 2;
         }
         else if (Input.GetKeyDown(KeyCode.K))
         {
-            discrete[0] = 7;
+            discrete[2] = 3;
         }
     }
 
@@ -153,29 +170,6 @@ public class FTGAgent : Agent
             return;
 
         episodeEnding = true;
-
-        bool isDraw = matchManager.IsDraw;
-        bool isWinner = matchManager.Winner != null && selfController != null && matchManager.Winner == selfController;
-        bool isLoser = matchManager.Loser != null && selfController != null && matchManager.Loser == selfController;
-
-        if (isDraw)
-        {
-            EndEpisode();
-            return;
-        }
-
-        if (isWinner)
-        {
-            EndEpisode();
-            return;
-        }
-
-        if (isLoser)
-        {
-            EndEpisode();
-            return;
-        }
-
         EndEpisode();
     }
 }

@@ -9,12 +9,11 @@ public class WinLoseReward : MonoBehaviour
     public FighterController selfController;
 
     [Header("Reward Settings")]
-    public float winReward = 10f;
-    public float losePenalty = -10f;
+    public float winReward = 8f;
+    public float losePenalty = -8f;
     public float drawReward = 0f;
 
     private bool rewardGivenThisRound = false;
-    private bool lastRoundActive = false;
 
     private void Awake()
     {
@@ -25,52 +24,70 @@ public class WinLoseReward : MonoBehaviour
             selfController = GetComponent<FighterController>();
     }
 
+    private void OnEnable()
+    {
+        Subscribe();
+    }
+
     private void Start()
+    {
+        Subscribe();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void Subscribe()
     {
         if (matchManager != null)
         {
-            lastRoundActive = matchManager.RoundActive;
+            matchManager.OnRoundStarted -= HandleRoundStarted;
+            matchManager.OnRoundStarted += HandleRoundStarted;
+
+            matchManager.OnRoundEnded -= HandleRoundEnded;
+            matchManager.OnRoundEnded += HandleRoundEnded;
         }
     }
 
-    private void Update()
+    private void Unsubscribe()
     {
-        if (matchManager == null || agent == null || selfController == null)
+        if (matchManager != null)
+        {
+            matchManager.OnRoundStarted -= HandleRoundStarted;
+            matchManager.OnRoundEnded -= HandleRoundEnded;
+        }
+    }
+
+    private void HandleRoundStarted()
+    {
+        rewardGivenThisRound = false;
+    }
+
+    private void HandleRoundEnded(FighterController winner, FighterController loser, bool draw)
+    {
+        if (rewardGivenThisRound || agent == null || selfController == null)
             return;
 
-        bool currentRoundActive = matchManager.RoundActive;
-
-        if (currentRoundActive)
-        {
-            rewardGivenThisRound = false;
-        }
-        else if (lastRoundActive && !rewardGivenThisRound)
-        {
-            ResolveRoundReward();
-            rewardGivenThisRound = true;
-        }
-
-        lastRoundActive = currentRoundActive;
-    }
-
-    private void ResolveRoundReward()
-    {
-        if (matchManager.IsDraw)
+        if (draw)
         {
             agent.AddReward(drawReward);
-            return;
         }
-
-        if (matchManager.Winner == selfController)
+        else if (winner == selfController)
         {
             agent.AddReward(winReward);
-            return;
         }
-
-        if (matchManager.Loser == selfController)
+        else if (loser == selfController)
         {
             agent.AddReward(losePenalty);
-            return;
         }
+
+        rewardGivenThisRound = true;
     }
 }

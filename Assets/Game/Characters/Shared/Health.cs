@@ -31,13 +31,13 @@ public class Health : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0);
 
-        Debug.Log(gameObject.name + " HP: " + currentHealth);
+        DLog.Log(gameObject.name + " HP: " + currentHealth);
 
         OnDamaged?.Invoke(damage);
 
         if (currentHealth <= 0)
         {
-            Debug.Log(gameObject.name + " is defeated!");
+            DLog.Log(gameObject.name + " is defeated!");
             OnDeath?.Invoke();
         }
     }

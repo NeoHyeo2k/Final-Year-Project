@@ -164,13 +164,13 @@ public class CharacterController2D : MonoBehaviour
 
         if (CurrentState != lastState)
         {
-            Debug.Log("State: " + CurrentState);
+            DLog.Log("State: " + CurrentState);
             lastState = CurrentState;
         }
 
         if (CurrentAttackPhase != lastAttackPhase)
         {
-            Debug.Log("Attack Phase: " + CurrentAttackPhase);
+            DLog.Log("Attack Phase: " + CurrentAttackPhase);
             lastAttackPhase = CurrentAttackPhase;
         }
     }
@@ -402,7 +402,7 @@ public class CharacterController2D : MonoBehaviour
         bufferedAction = action;
         bufferedActionTimer = inputBufferTime;
 
-        Debug.Log(gameObject.name + " buffered action: " + bufferedAction);
+        DLog.Log(gameObject.name + " buffered action: " + bufferedAction);
     }
 
     void ClearBufferedAction()
@@ -669,7 +669,7 @@ public class CharacterController2D : MonoBehaviour
 
         ClearBufferedAction();
 
-        Debug.Log("Start Attack: " + CurrentAttackData.attackName + " [" + CurrentAttackData.attackType + "]");
+        DLog.Log("Start Attack: " + CurrentAttackData.attackName + " [" + CurrentAttackData.attackType + "]");
     }
 
     void EndAttack()
@@ -698,7 +698,7 @@ public class CharacterController2D : MonoBehaviour
 
         hitstunTimer = duration;
 
-        Debug.Log(gameObject.name + " entered Hitstun for " + duration + " seconds.");
+        DLog.Log(gameObject.name + " entered Hitstun for " + duration + " seconds.");
     }
 
     public void ReceiveBlockstun(float duration)
@@ -716,7 +716,7 @@ public class CharacterController2D : MonoBehaviour
 
         blockstunTimer = duration;
 
-        Debug.Log(gameObject.name + " entered Blockstun for " + duration + " seconds.");
+        DLog.Log(gameObject.name + " entered Blockstun for " + duration + " seconds.");
     }
 
     public void RegisterHit()
@@ -734,7 +734,7 @@ public class CharacterController2D : MonoBehaviour
 
         lastHitTime = currentTime;
 
-        Debug.Log(gameObject.name + " combo count = " + comboCount);
+        DLog.Log(gameObject.name + " combo count = " + comboCount);
     }
 
     public void ApplyKnockback(float force, Transform attacker)
@@ -838,7 +838,7 @@ public class CharacterController2D : MonoBehaviour
 
         ClearBufferedAction();
 
-        Debug.Log("Cancel into: " + CurrentAttackData.attackName);
+        DLog.Log("Cancel into: " + CurrentAttackData.attackName);
         return true;
     }
 

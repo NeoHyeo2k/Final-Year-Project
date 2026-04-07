@@ -2013,6 +2013,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1890077487347137838, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4703547072117991421}
+    - targetCorrespondingSourceObject: {fileID: 1890077487347137838, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4703547072117991426}
   m_SourcePrefab: {fileID: 100100000, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
 --- !u!4 &4703547072117991393 stripped
 Transform:
@@ -2166,6 +2169,7 @@ MonoBehaviour:
   stateMachine: {fileID: 4703547072117991406}
   combat: {fileID: 4703547072117991405}
   hurtboxManager: {fileID: 4703547072117991404}
+  attackName: 
 --- !u!114 &4703547072117991412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2210,6 +2214,7 @@ MonoBehaviour:
   endEpisodeOnRoundEnd: 1
   restartRoundFromAgent: 0
   stepPenalty: -0.001
+  debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2227,8 +2232,8 @@ MonoBehaviour:
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 08000000
-    VectorActionSize: 08000000
+      BranchSizes: 030000000300000004000000
+    VectorActionSize: 030000000300000004000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
@@ -2256,8 +2261,8 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   matchManager: {fileID: 243370608}
   selfController: {fileID: 4703547072117991408}
-  winReward: 10
-  losePenalty: -10
+  winReward: 8
+  losePenalty: -8
   drawReward: 0
 --- !u!114 &4703547072117991417
 MonoBehaviour:
@@ -2274,8 +2279,8 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   selfHealth: {fileID: 4703547072117991402}
   opponentHealth: {fileID: 7703608308200891310}
-  rewardPerHitEvent: 1
-  penaltyPerHitTakenEvent: -1
+  rewardPerHitEvent: 2
+  penaltyPerHitTakenEvent: -1.5
   scaleByDamageAmount: 0
   rewardPerDamagePoint: 0
   penaltyPerDamagePointTaken: 0
@@ -2306,6 +2311,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe37e91c17a470f4884be044cd157044, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  repeatedAttackInterval: 0.2
+  debugActions: 0
+--- !u!114 &4703547072117991426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773127188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5beb29f1b38743145810766021b687ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 4703547072117991413}
+  self: {fileID: 4703547072117991408}
+  opponent: {fileID: 7703608308200891317}
+  selfHealth: {fileID: 4703547072117991402}
+  opponentHealth: {fileID: 7703608308200891310}
+  matchManager: {fileID: 243370608}
+  preferredMinDistance: 1
+  preferredMaxDistance: 2.2
+  approachRewardScale: 0.012
+  retreatPenaltyScale: 0.008
+  tooClosePenaltyScale: 0.012
+  preferredRangeRewardPerSecond: 0.01
+  maxSpacingRewardPerStep: 0.02
+  attackAttemptReward: 0.0108
+  whiffPenalty: -0.06
+  maxAttackAttemptDistance: 2.4
+  inactivityThreshold: 1
+  inactivityPenaltyInterval: 0.5
+  inactivityPenalty: -0.03
+  movementEpsilon: 0.03
+  debugLog: 0
 --- !u!1001 &7703608308200891301
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2581,6 +2621,7 @@ MonoBehaviour:
   stateMachine: {fileID: 7703608308200891315}
   combat: {fileID: 7703608308200891314}
   hurtboxManager: {fileID: 7703608308200891313}
+  attackName: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

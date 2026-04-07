@@ -10,7 +10,7 @@ public class KeyboardInput : MonoBehaviour
 
         if (controller == null)
         {
-            Debug.LogError("FighterController not found on " + gameObject.name);
+            DLog.LogError("FighterController not found on " + gameObject.name);
         }
     }
 

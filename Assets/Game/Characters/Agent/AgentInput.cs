@@ -5,16 +5,32 @@ public class AgentInput : MonoBehaviour
     private FighterController controller;
     private FighterCommand command;
 
-    private int currentDiscreteAction = 0;
-    private int previousDiscreteAction = 0;
+    [Header("Attack Repeat")]
+    [Tooltip("持续选择攻击动作时，允许再次请求攻击的最小间隔")]
+    public float repeatedAttackInterval = 0.18f;
+
+    [Header("Debug")]
+    public bool debugActions = false;
+
+    // Branch actions
+    private int currentMoveAction = 0;
+    private int currentPostureAction = 0;
+    private int currentCombatAction = 0;
+
+    private int previousMoveAction = 0;
+    private int previousPostureAction = 0;
+    private int previousCombatAction = 0;
+
+    private float lightAttackTimer = 0f;
+    private float heavyAttackTimer = 0f;
 
     void Start()
     {
         controller = GetComponent<FighterController>();
 
-        if (controller == null)
+        if (controller == null &&)
         {
-            Debug.LogError("FighterController not found on " + gameObject.name);
+            DLog.LogError("FighterController not found on " + gameObject.name);
         }
 
         command = FighterCommand.Empty;
@@ -24,7 +40,10 @@ public class AgentInput : MonoBehaviour
     {
         if (controller == null) return;
 
-        BuildCommandFromCurrentAction();
+        lightAttackTimer += Time.deltaTime;
+        heavyAttackTimer += Time.deltaTime;
+
+        BuildCommandFromBranchActions();
 
         controller.Move(command.move);
 
@@ -46,69 +65,125 @@ public class AgentInput : MonoBehaviour
             controller.RequestHeavyAttack();
         }
 
-        previousDiscreteAction = currentDiscreteAction;
+        previousMoveAction = currentMoveAction;
+        previousPostureAction = currentPostureAction;
+        previousCombatAction = currentCombatAction;
     }
 
-    public void SetCommand(FighterCommand newCommand)
+    public void SetBranchActions(int moveAction, int postureAction, int combatAction)
     {
-        command = newCommand;
+        currentMoveAction = moveAction;
+        currentPostureAction = postureAction;
+        currentCombatAction = combatAction;
+
+        if (debugActions)
+        {
+            DLog.Log($"{name} actions => move:{moveAction}, posture:{postureAction}, combat:{combatAction}");
+        }
     }
 
-    public void SetDiscreteAction(int actionId)
-    {
-        Debug.Log("SetDiscreteAction: " + actionId);
-        currentDiscreteAction = actionId;
-    }
-
-    private void BuildCommandFromCurrentAction()
+    private void BuildCommandFromBranchActions()
     {
         FighterCommand next = FighterCommand.Empty;
 
-        bool isNewAction = currentDiscreteAction != previousDiscreteAction;
+        bool postureChanged = currentPostureAction != previousPostureAction;
+        bool combatChanged = currentCombatAction != previousCombatAction;
 
-        switch (currentDiscreteAction)
+        // Branch 1: Move
+        switch (currentMoveAction)
+        {
+            case 0:
+                next.move = 0f;
+                break;
+            case 1:
+                next.move = -1f;
+                break;
+            case 2:
+                next.move = 1f;
+                break;
+        }
+
+        // Branch 2: Jump / Crouch
+        switch (currentPostureAction)
+        {
+            case 0:
+                break;
+            case 1:
+                if (postureChanged)
+                {
+                    next.jumpPressed = true;
+                }
+                break;
+            case 2:
+                next.crouchHeld = true;
+                break;
+        }
+
+        // Branch 3: Block / Light / Heavy
+        switch (currentCombatAction)
         {
             case 0:
                 break;
 
             case 1:
-                next.move = -1f;
-                break;
-
-            case 2:
-                next.move = 1f;
-                break;
-
-            case 3:
-                if (isNewAction)
-                {
-                    next.jumpPressed = true;
-                }
-                break;
-
-            case 4:
-                next.crouchHeld = true;
-                break;
-
-            case 5:
                 next.blockHeld = true;
                 break;
 
-            case 6:
-                if (isNewAction)
+            case 2:
+                if (ShouldRequestLightAttack(combatChanged))
                 {
                     next.lightAttackPressed = true;
+                    lightAttackTimer = 0f;
                 }
                 break;
 
-            case 7:
-                if (isNewAction)
+            case 3:
+                if (ShouldRequestHeavyAttack(combatChanged))
                 {
                     next.heavyAttackPressed = true;
+                    heavyAttackTimer = 0f;
                 }
                 break;
         }
 
         command = next;
+    }
+
+    private bool ShouldRequestLightAttack(bool combatChanged)
+    {
+        if (controller == null) return false;
+
+        if (combatChanged)
+            return true;
+
+        if (lightAttackTimer < repeatedAttackInterval)
+            return false;
+
+        if (controller.IsAttacking)
+            return false;
+
+        if (controller.HasBufferedAction)
+            return false;
+
+        return true;
+    }
+
+    private bool ShouldRequestHeavyAttack(bool combatChanged)
+    {
+        if (controller == null) return false;
+
+        if (combatChanged)
+            return true;
+
+        if (heavyAttackTimer < repeatedAttackInterval)
+            return false;
+
+        if (controller.IsAttacking)
+            return false;
+
+        if (controller.HasBufferedAction)
+            return false;
+
+        return true;
     }
 }

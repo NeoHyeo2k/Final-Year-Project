@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class MatchManager : MonoBehaviour
@@ -28,6 +29,9 @@ public class MatchManager : MonoBehaviour
 
     public FighterController Winner { get; private set; }
     public FighterController Loser { get; private set; }
+
+    public event Action OnRoundStarted;
+    public event Action<FighterController, FighterController, bool> OnRoundEnded;
 
     private float restartTimer = 0f;
 
@@ -62,7 +66,7 @@ public class MatchManager : MonoBehaviour
     {
         if (fighterA == null || fighterB == null || healthA == null || healthB == null || spawnA == null || spawnB == null)
         {
-            Debug.LogError("MatchManager is missing references.");
+            DLog.LogError("MatchManager is missing references.");
             return;
         }
 
@@ -82,8 +86,10 @@ public class MatchManager : MonoBehaviour
 
         if (logRoundEvents)
         {
-            Debug.Log("Round Start");
+            DLog.Log("Round Start");
         }
+
+        OnRoundStarted?.Invoke();
     }
 
     void CheckWinCondition()
@@ -142,12 +148,14 @@ public class MatchManager : MonoBehaviour
         {
             if (draw)
             {
-                Debug.Log("Round End: Draw");
+                DLog.Log("Round End: Draw");
             }
             else if (winner != null && loser != null)
             {
-                Debug.Log("Round End: Winner = " + winner.gameObject.name + ", Loser = " + loser.gameObject.name);
+                DLog.Log("Round End: Winner = " + winner.gameObject.name + ", Loser = " + loser.gameObject.name);
             }
         }
+
+        OnRoundEnded?.Invoke(winner, loser, draw);
     }
 }

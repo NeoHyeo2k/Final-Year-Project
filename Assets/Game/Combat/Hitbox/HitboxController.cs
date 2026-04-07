@@ -14,7 +14,7 @@ public class HitboxController : MonoBehaviour
 
         if (ownerController == null)
         {
-            Debug.LogError("FighterController not found in parent of " + gameObject.name);
+            DLog.LogError("FighterController not found in parent of " + gameObject.name);
         }
     }
 
@@ -78,7 +78,7 @@ void TryHit(Collider2D other)
         targetController.ReceiveBlockstun(blockstunTime);
         targetController.ApplyBlockPush(knockbackForce, ownerController.transform);
 
-        Debug.Log(
+        DLog.Log(
             ownerController.gameObject.name +
             " attack was BLOCKED by " +
             targetController.gameObject.name +
@@ -97,7 +97,7 @@ void TryHit(Collider2D other)
     targetController.ApplyKnockback(knockbackForce, ownerController.transform);
     targetController.RegisterHit();
 
-    Debug.Log(
+    DLog.Log(
         ownerController.gameObject.name +
         " hit " +
         targetController.gameObject.name +

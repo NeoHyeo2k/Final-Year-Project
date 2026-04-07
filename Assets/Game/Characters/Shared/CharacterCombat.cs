@@ -129,10 +129,17 @@ public class CharacterCombat : MonoBehaviour
         if (!owner.enableInputBuffer) return;
         if (action == BufferedAction.None) return;
 
+        if (bufferedAction == action){
+            return;
+        }
+
         bufferedAction = action;
         bufferedActionTimer = owner.inputBufferTime;
 
-        Debug.Log(gameObject.name + " buffered action: " + bufferedAction);
+        if (DebugSettings.ENABLE_LOG){
+            DLog.Log(gameObject.name + " buffered action: " + bufferedAction);
+        }
+
     }
 
     public void ClearBufferedAction()
@@ -161,7 +168,7 @@ public class CharacterCombat : MonoBehaviour
         owner.motor.StopHorizontalMovement();
         ClearBufferedAction();
 
-        Debug.Log("Start Attack: " + CurrentAttackData.attackName + " [" + CurrentAttackData.attackType + "]");
+        DLog.Log("Start Attack: " + CurrentAttackData.attackName + " [" + CurrentAttackData.attackType + "]");
     }
 
     public void EndAttack()
@@ -220,7 +227,7 @@ public class CharacterCombat : MonoBehaviour
 
         ClearBufferedAction();
 
-        Debug.Log("Cancel into: " + CurrentAttackData.attackName);
+        DLog.Log("Cancel into: " + CurrentAttackData.attackName);
         return true;
     }
 
@@ -234,10 +241,10 @@ public class CharacterCombat : MonoBehaviour
         {
             StartAttack(owner.lightAttack);
         }
-        else
-        {
-            BufferAction(BufferedAction.LightAttack);
-        }
+        //else
+        //{
+        //    BufferAction(BufferedAction.LightAttack);
+        //}
     }
 
     public void RequestHeavyAttack()
@@ -250,10 +257,10 @@ public class CharacterCombat : MonoBehaviour
         {
             StartAttack(owner.heavyAttack);
         }
-        else
-        {
-            BufferAction(BufferedAction.HeavyAttack);
-        }
+        //else
+        //{
+        //    BufferAction(BufferedAction.HeavyAttack);
+        //}
     }
 
     public void RegisterHit()
@@ -271,7 +278,7 @@ public class CharacterCombat : MonoBehaviour
 
         lastHitTime = currentTime;
 
-        Debug.Log(gameObject.name + " combo count = " + comboCount);
+        DLog.Log(gameObject.name + " combo count = " + comboCount);
     }
 
     public void ResetCombat()
