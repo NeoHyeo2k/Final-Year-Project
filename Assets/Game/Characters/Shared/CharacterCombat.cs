@@ -136,9 +136,7 @@ public class CharacterCombat : MonoBehaviour
         bufferedAction = action;
         bufferedActionTimer = owner.inputBufferTime;
 
-        if (DebugSettings.ENABLE_LOG){
-            DLog.Log(gameObject.name + " buffered action: " + bufferedAction);
-        }
+        DLog.Log(gameObject.name + " buffered action: " + bufferedAction);
 
     }
 

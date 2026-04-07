@@ -2016,6 +2016,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1890077487347137838, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4703547072117991426}
+    - targetCorrespondingSourceObject: {fileID: 1890077487347137838, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4703547072117991427}
   m_SourcePrefab: {fileID: 100100000, guid: 4f51dbab3325f09428d24180abc63111, type: 3}
 --- !u!4 &4703547072117991393 stripped
 Transform:
@@ -2279,8 +2282,8 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   selfHealth: {fileID: 4703547072117991402}
   opponentHealth: {fileID: 7703608308200891310}
-  rewardPerHitEvent: 2
-  penaltyPerHitTakenEvent: -1.5
+  rewardPerHitEvent: 0.8
+  penaltyPerHitTakenEvent: -0.8
   scaleByDamageAmount: 0
   rewardPerDamagePoint: 0
   penaltyPerDamagePointTaken: 0
@@ -2338,14 +2341,36 @@ MonoBehaviour:
   tooClosePenaltyScale: 0.012
   preferredRangeRewardPerSecond: 0.01
   maxSpacingRewardPerStep: 0.02
-  attackAttemptReward: 0.0108
+  faceHugPenaltyPerSecond: -0.03
+  faceHugDistance: 0.7
+  attackAttemptReward: 0.008
   whiffPenalty: -0.06
-  maxAttackAttemptDistance: 2.4
+  attackAttemptLowerTolerance: 0
+  attackAttemptUpperTolerance: 0.15
+  disengageReward: 0.05
+  disengageRequiredDistanceGain: 0.5
+  disengageWindow: 1
   inactivityThreshold: 1
   inactivityPenaltyInterval: 0.5
   inactivityPenalty: -0.03
   movementEpsilon: 0.03
   debugLog: 0
+--- !u!114 &4703547072117991427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773127188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b6042bc9a5d4aa58d931eae49442e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
 --- !u!1001 &7703608308200891301
 PrefabInstance:
   m_ObjectHideFlags: 0

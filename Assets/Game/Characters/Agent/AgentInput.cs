@@ -28,7 +28,7 @@ public class AgentInput : MonoBehaviour
     {
         controller = GetComponent<FighterController>();
 
-        if (controller == null &&)
+        if (controller == null)
         {
             DLog.LogError("FighterController not found on " + gameObject.name);
         }

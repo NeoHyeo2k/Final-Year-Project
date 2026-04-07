@@ -33,15 +33,35 @@ public class ShapingReward : MonoBehaviour
     [Tooltip("每步 spacing reward 的最大绝对值")]
     public float maxSpacingRewardPerStep = 0.02f;
 
+    [Header("Anti Face-Hug")]
+    [Tooltip("极近距离持续停留时，每秒惩罚，用于抑制贴脸乱打")]
+    public float faceHugPenaltyPerSecond = -0.03f;
+
+    [Tooltip("小于该距离时认为是过度贴脸")]
+    public float faceHugDistance = 0.7f;
+
     [Header("Attack Shaping")]
-    [Tooltip("只有在理想距离附近尝试攻击，才给极小奖励")]
+    [Tooltip("只有在较合理距离发起攻击，才给极小奖励")]
     public float attackAttemptReward = 0.008f;
 
     [Tooltip("一次攻击结束没命中则判为空挥")]
     public float whiffPenalty = -0.06f;
 
-    [Tooltip("允许攻击尝试奖励的最大距离")]
-    public float maxAttackAttemptDistance = 2.4f;
+    [Tooltip("攻击尝试奖励允许的额外边界")]
+    public float attackAttemptLowerTolerance = 0.0f;
+
+    [Tooltip("攻击尝试奖励允许的额外上界余量")]
+    public float attackAttemptUpperTolerance = 0.15f;
+
+    [Header("Disengage / Tempo Reset")]
+    [Tooltip("受到伤害后，若成功拉开距离，则给予一次奖励")]
+    public float disengageReward = 0.05f;
+
+    [Tooltip("从受击瞬间开始，累计拉开至少这么多距离才算成功 reset")]
+    public float disengageRequiredDistanceGain = 0.5f;
+
+    [Tooltip("受到伤害后，最多在这个时间窗口内触发 reset reward")]
+    public float disengageWindow = 1.0f;
 
     [Header("Inactivity")]
     public float inactivityThreshold = 1.0f;
@@ -63,6 +83,11 @@ public class ShapingReward : MonoBehaviour
 
     private float inactivityTimer = 0f;
     private float inactivityPenaltyTimer = 0f;
+
+    // Disengage state
+    private bool disengageTrackingActive = false;
+    private float disengageStartDistance = 0f;
+    private float disengageTimer = 0f;
 
     private bool initialized = false;
 
@@ -125,6 +150,7 @@ public class ShapingReward : MonoBehaviour
     private void HandleRoundEnded(FighterController winner, FighterController loser, bool draw)
     {
         inAttackSequence = false;
+        disengageTrackingActive = false;
     }
 
     private void ResetInternalState()
@@ -143,6 +169,10 @@ public class ShapingReward : MonoBehaviour
 
         inactivityTimer = 0f;
         inactivityPenaltyTimer = 0f;
+
+        disengageTrackingActive = false;
+        disengageStartDistance = lastDistance;
+        disengageTimer = 0f;
 
         initialized = true;
     }
@@ -163,9 +193,18 @@ public class ShapingReward : MonoBehaviour
         float currentDistance = GetHorizontalDistance();
         float dt = Time.deltaTime;
 
+        bool tookDamageThisFrame = selfHealth.currentHealth < lastSelfHealth;
+        bool dealtDamageThisFrame = opponentHealth.currentHealth < lastOpponentHealth;
+
+        if (tookDamageThisFrame)
+        {
+            StartDisengageTracking(currentDistance);
+        }
+
         ApplySpacingReward(currentDistance, dt);
         UpdateAttackSequence(currentDistance);
-        UpdateInactivity(dt);
+        UpdateDisengageReward(currentDistance, dt, tookDamageThisFrame, dealtDamageThisFrame);
+        UpdateInactivity(dt, dealtDamageThisFrame, tookDamageThisFrame);
 
         lastDistance = currentDistance;
         lastPosition = self.transform.position;
@@ -216,6 +255,12 @@ public class ShapingReward : MonoBehaviour
             reward += preferredRangeRewardPerSecond * dt;
         }
 
+        // 额外抑制贴脸站桩 / 贴脸乱打
+        if (currentDistance < faceHugDistance)
+        {
+            reward += faceHugPenaltyPerSecond * dt;
+        }
+
         reward = Mathf.Clamp(reward, -maxSpacingRewardPerStep, maxSpacingRewardPerStep);
 
         if (Mathf.Abs(reward) > 0f)
@@ -243,14 +288,17 @@ public class ShapingReward : MonoBehaviour
             inAttackSequence = true;
             hitConfirmedThisAttack = false;
 
-            if (currentDistance >= preferredMinDistance * 0.8f &&
-                currentDistance <= maxAttackAttemptDistance)
+            bool goodAttackDistance =
+                currentDistance >= preferredMinDistance - attackAttemptLowerTolerance &&
+                currentDistance <= preferredMaxDistance + attackAttemptUpperTolerance;
+
+            if (goodAttackDistance)
             {
                 agent.AddReward(attackAttemptReward);
 
                 if (debugLog)
                 {
-                    DLog.Log($"{name} attack attempt reward: {attackAttemptReward:F4}");
+                    DLog.Log($"{name} attack attempt reward: {attackAttemptReward:F4}, dist={currentDistance:F2}");
                 }
             }
         }
@@ -290,12 +338,68 @@ public class ShapingReward : MonoBehaviour
         }
     }
 
-    private void UpdateInactivity(float dt)
+    private void StartDisengageTracking(float currentDistance)
+    {
+        disengageTrackingActive = true;
+        disengageStartDistance = currentDistance;
+        disengageTimer = 0f;
+
+        if (debugLog)
+        {
+            DLog.Log($"{name} disengage tracking started. startDist={disengageStartDistance:F2}");
+        }
+    }
+
+    private void UpdateDisengageReward(float currentDistance, float dt, bool tookDamageThisFrame, bool dealtDamageThisFrame)
+    {
+        if (!disengageTrackingActive)
+            return;
+
+        disengageTimer += dt;
+
+        float distanceGain = currentDistance - disengageStartDistance;
+
+        if (distanceGain >= disengageRequiredDistanceGain)
+        {
+            agent.AddReward(disengageReward);
+
+            if (debugLog)
+            {
+                DLog.Log($"{name} disengage reward: {disengageReward:F4}, gain={distanceGain:F2}");
+            }
+
+            disengageTrackingActive = false;
+            return;
+        }
+
+        // 如果已经重新打到对面，说明进入了新的交互阶段，停止追踪
+        if (dealtDamageThisFrame && !tookDamageThisFrame)
+        {
+            disengageTrackingActive = false;
+
+            if (debugLog)
+            {
+                DLog.Log($"{name} disengage tracking cancelled by re-engage hit.");
+            }
+
+            return;
+        }
+
+        if (disengageTimer >= disengageWindow)
+        {
+            disengageTrackingActive = false;
+
+            if (debugLog)
+            {
+                DLog.Log($"{name} disengage window expired.");
+            }
+        }
+    }
+
+    private void UpdateInactivity(float dt, bool dealtDamageThisFrame, bool tookDamageThisFrame)
     {
         bool movedEnough = Vector3.Distance(self.transform.position, lastPosition) > movementEpsilon;
         bool isAttacking = self.IsAttacking;
-        bool dealtDamageThisFrame = opponentHealth.currentHealth < lastOpponentHealth;
-        bool tookDamageThisFrame = selfHealth.currentHealth < lastSelfHealth;
 
         bool meaningfulInteraction =
             movedEnough ||
