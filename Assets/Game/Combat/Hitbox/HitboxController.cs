@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class HitboxController : MonoBehaviour
 {
     public LayerMask targetLayer;
+
+    public static event Action<FighterController, FighterController, AttackData, int> OnGlobalAttackHit;
+    public static event Action<FighterController, FighterController, AttackData> OnGlobalAttackBlocked;
 
     private FighterController ownerController;
     private HashSet<FighterController> hitTargets = new HashSet<FighterController>();
@@ -28,86 +32,84 @@ public class HitboxController : MonoBehaviour
         TryHit(other);
     }
 
-// 先去掉 OnTriggerStay2D，减少时序干扰
-//     private void OnTriggerStay2D(Collider2D other)
-//     {
-//         TryHit(other);
-//     }
-
-void TryHit(Collider2D other)
-{
-    if (ownerController == null) return;
-
-    if (!gameObject.activeInHierarchy) return;
-    if (!ownerController.IsAttacking) return;
-    if (ownerController.CurrentAttackData == null) return;
-
-    if (((1 << other.gameObject.layer) & targetLayer) == 0)
-        return;
-
-    HurtboxController hurtbox = other.GetComponent<HurtboxController>();
-    if (hurtbox == null) return;
-
-    FighterController targetController = hurtbox.OwnerController;
-    Health targetHealth = hurtbox.OwnerHealth;
-
-    if (targetController == null || targetHealth == null)
-        return;
-
-    if (targetController == ownerController)
-        return;
-
-    if (hitTargets.Contains(targetController))
-        return;
-
-    hitTargets.Add(targetController);
-
-    AttackData attackData = ownerController.CurrentAttackData;
-    int damage = attackData.damage;
-    float hitstunTime = attackData.hitstunTime;
-    float knockbackForce = attackData.pushbackForce;
-
-    if (targetController.CanBlockAttack(attackData))
+    void TryHit(Collider2D other)
     {
-        float blockstunTime = hitstunTime * 0.5f;
-        if (blockstunTime <= 0f)
+        if (ownerController == null) return;
+
+        if (!gameObject.activeInHierarchy) return;
+        if (!ownerController.IsAttacking) return;
+        if (ownerController.CurrentAttackData == null) return;
+
+        if (((1 << other.gameObject.layer) & targetLayer) == 0)
+            return;
+
+        HurtboxController hurtbox = other.GetComponent<HurtboxController>();
+        if (hurtbox == null) return;
+
+        FighterController targetController = hurtbox.OwnerController;
+        Health targetHealth = hurtbox.OwnerHealth;
+
+        if (targetController == null || targetHealth == null)
+            return;
+
+        if (targetController == ownerController)
+            return;
+
+        if (hitTargets.Contains(targetController))
+            return;
+
+        hitTargets.Add(targetController);
+
+        AttackData attackData = ownerController.CurrentAttackData;
+        int damage = attackData.damage;
+        float hitstunTime = attackData.hitstunTime;
+        float knockbackForce = attackData.pushbackForce;
+
+        if (targetController.CanBlockAttack(attackData))
         {
-            blockstunTime = targetController.defaultBlockstunDuration;
+            float blockstunTime = hitstunTime * 0.5f;
+            if (blockstunTime <= 0f)
+            {
+                blockstunTime = targetController.defaultBlockstunDuration;
+            }
+
+            targetController.ReceiveBlockstun(blockstunTime);
+            targetController.ApplyBlockPush(knockbackForce, ownerController.transform);
+
+            OnGlobalAttackBlocked?.Invoke(ownerController, targetController, attackData);
+
+            DLog.Log(
+                ownerController.gameObject.name +
+                " attack was BLOCKED by " +
+                targetController.gameObject.name +
+                " using " +
+                attackData.attackName +
+                " [" + attackData.attackType + "]"
+            );
+
+            return;
         }
 
-        targetController.ReceiveBlockstun(blockstunTime);
-        targetController.ApplyBlockPush(knockbackForce, ownerController.transform);
+        targetHealth.TakeDamage(damage);
+        ownerController.NotifyAttackHit();
+
+        targetController.ReceiveHitstun(hitstunTime);
+        targetController.ApplyKnockback(knockbackForce, ownerController.transform);
+        targetController.RegisterHit();
+
+        OnGlobalAttackHit?.Invoke(ownerController, targetController, attackData, damage);
 
         DLog.Log(
             ownerController.gameObject.name +
-            " attack was BLOCKED by " +
+            " hit " +
             targetController.gameObject.name +
-            " using " +
+            " at " +
+            hurtbox.HurtboxType +
+            " with " +
             attackData.attackName +
-            " [" + attackData.attackType + "]"
+            " [" + attackData.attackType + "] for " +
+            damage +
+            " damage."
         );
-
-        return;
     }
-
-    targetHealth.TakeDamage(damage);
-    ownerController.NotifyAttackHit();
-
-    targetController.ReceiveHitstun(hitstunTime);
-    targetController.ApplyKnockback(knockbackForce, ownerController.transform);
-    targetController.RegisterHit();
-
-    DLog.Log(
-        ownerController.gameObject.name +
-        " hit " +
-        targetController.gameObject.name +
-        " at " +
-        hurtbox.HurtboxType +
-        " with " +
-        attackData.attackName +
-        " [" + attackData.attackType + "] for " +
-        damage +
-        " damage."
-    );
-}
 }

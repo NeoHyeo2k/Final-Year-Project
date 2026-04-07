@@ -28,45 +28,48 @@ public class ShapingReward : MonoBehaviour
     public float tooClosePenaltyScale = 0.012f;
 
     [Tooltip("处于理想距离带时，每秒奖励")]
-    public float preferredRangeRewardPerSecond = 0.01f;
+    public float preferredRangeRewardPerSecond = 0.018f;
+
+    [Tooltip("成功进入理想距离带时，一次性奖励")]
+    public float enterPreferredBandReward = 0.02f;
 
     [Tooltip("每步 spacing reward 的最大绝对值")]
     public float maxSpacingRewardPerStep = 0.02f;
 
     [Header("Anti Face-Hug")]
     [Tooltip("极近距离持续停留时，每秒惩罚，用于抑制贴脸乱打")]
-    public float faceHugPenaltyPerSecond = -0.03f;
+    public float faceHugPenaltyPerSecond = -0.018f;
 
     [Tooltip("小于该距离时认为是过度贴脸")]
     public float faceHugDistance = 0.7f;
 
     [Header("Attack Shaping")]
     [Tooltip("只有在较合理距离发起攻击，才给极小奖励")]
-    public float attackAttemptReward = 0.008f;
+    public float attackAttemptReward = 0.015f;
 
     [Tooltip("一次攻击结束没命中则判为空挥")]
-    public float whiffPenalty = -0.06f;
+    public float whiffPenalty = -0.035f;
 
-    [Tooltip("攻击尝试奖励允许的额外边界")]
+    [Tooltip("攻击尝试奖励允许的下界容差")]
     public float attackAttemptLowerTolerance = 0.0f;
 
-    [Tooltip("攻击尝试奖励允许的额外上界余量")]
+    [Tooltip("攻击尝试奖励允许的上界容差")]
     public float attackAttemptUpperTolerance = 0.15f;
 
     [Header("Disengage / Tempo Reset")]
     [Tooltip("受到伤害后，若成功拉开距离，则给予一次奖励")]
-    public float disengageReward = 0.05f;
+    public float disengageReward = 0.08f;
 
     [Tooltip("从受击瞬间开始，累计拉开至少这么多距离才算成功 reset")]
-    public float disengageRequiredDistanceGain = 0.5f;
+    public float disengageRequiredDistanceGain = 0.35f;
 
     [Tooltip("受到伤害后，最多在这个时间窗口内触发 reset reward")]
-    public float disengageWindow = 1.0f;
+    public float disengageWindow = 1.2f;
 
     [Header("Inactivity")]
     public float inactivityThreshold = 1.0f;
     public float inactivityPenaltyInterval = 0.5f;
-    public float inactivityPenalty = -0.03f;
+    public float inactivityPenalty = -0.015f;
     public float movementEpsilon = 0.03f;
 
     [Header("Debug")]
@@ -84,11 +87,11 @@ public class ShapingReward : MonoBehaviour
     private float inactivityTimer = 0f;
     private float inactivityPenaltyTimer = 0f;
 
-    // Disengage state
     private bool disengageTrackingActive = false;
     private float disengageStartDistance = 0f;
     private float disengageTimer = 0f;
 
+    private bool wasInPreferredBandLastFrame = false;
     private bool initialized = false;
 
     private void Awake()
@@ -150,7 +153,11 @@ public class ShapingReward : MonoBehaviour
     private void HandleRoundEnded(FighterController winner, FighterController loser, bool draw)
     {
         inAttackSequence = false;
+        hitConfirmedThisAttack = false;
+
         disengageTrackingActive = false;
+        disengageStartDistance = 0f;
+        disengageTimer = 0f;
     }
 
     private void ResetInternalState()
@@ -173,6 +180,10 @@ public class ShapingReward : MonoBehaviour
         disengageTrackingActive = false;
         disengageStartDistance = lastDistance;
         disengageTimer = 0f;
+
+        wasInPreferredBandLastFrame =
+            lastDistance >= preferredMinDistance &&
+            lastDistance <= preferredMaxDistance;
 
         initialized = true;
     }
@@ -205,6 +216,10 @@ public class ShapingReward : MonoBehaviour
         UpdateAttackSequence(currentDistance);
         UpdateDisengageReward(currentDistance, dt, tookDamageThisFrame, dealtDamageThisFrame);
         UpdateInactivity(dt, dealtDamageThisFrame, tookDamageThisFrame);
+
+        wasInPreferredBandLastFrame =
+            currentDistance >= preferredMinDistance &&
+            currentDistance <= preferredMaxDistance;
 
         lastDistance = currentDistance;
         lastPosition = self.transform.position;
@@ -255,7 +270,11 @@ public class ShapingReward : MonoBehaviour
             reward += preferredRangeRewardPerSecond * dt;
         }
 
-        // 额外抑制贴脸站桩 / 贴脸乱打
+        if (!wasInPreferredBandLastFrame && inPreferredBand)
+        {
+            reward += enterPreferredBandReward;
+        }
+
         if (currentDistance < faceHugDistance)
         {
             reward += faceHugPenaltyPerSecond * dt;
@@ -372,7 +391,6 @@ public class ShapingReward : MonoBehaviour
             return;
         }
 
-        // 如果已经重新打到对面，说明进入了新的交互阶段，停止追踪
         if (dealtDamageThisFrame && !tookDamageThisFrame)
         {
             disengageTrackingActive = false;

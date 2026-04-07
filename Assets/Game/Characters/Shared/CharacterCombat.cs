@@ -1,7 +1,11 @@
+using System;
 using UnityEngine;
 
 public class CharacterCombat : MonoBehaviour
 {
+    public static event Action<FighterController, AttackData> OnGlobalAttackAttempt;
+    public static event Action<FighterController, AttackData> OnGlobalAttackWhiff;
+
     private FighterController owner;
 
     public int comboCount = 0;
@@ -129,7 +133,8 @@ public class CharacterCombat : MonoBehaviour
         if (!owner.enableInputBuffer) return;
         if (action == BufferedAction.None) return;
 
-        if (bufferedAction == action){
+        if (bufferedAction == action)
+        {
             return;
         }
 
@@ -137,7 +142,6 @@ public class CharacterCombat : MonoBehaviour
         bufferedActionTimer = owner.inputBufferTime;
 
         DLog.Log(gameObject.name + " buffered action: " + bufferedAction);
-
     }
 
     public void ClearBufferedAction()
@@ -166,11 +170,18 @@ public class CharacterCombat : MonoBehaviour
         owner.motor.StopHorizontalMovement();
         ClearBufferedAction();
 
+        OnGlobalAttackAttempt?.Invoke(owner, CurrentAttackData);
+
         DLog.Log("Start Attack: " + CurrentAttackData.attackName + " [" + CurrentAttackData.attackType + "]");
     }
 
     public void EndAttack()
     {
+        if (owner != null && CurrentAttackData != null && !currentAttackHasHit)
+        {
+            OnGlobalAttackWhiff?.Invoke(owner, CurrentAttackData);
+        }
+
         isAttacking = false;
         CurrentAttackPhase = AttackPhase.None;
         attackTimer = 0f;
@@ -225,6 +236,8 @@ public class CharacterCombat : MonoBehaviour
 
         ClearBufferedAction();
 
+        OnGlobalAttackAttempt?.Invoke(owner, CurrentAttackData);
+
         DLog.Log("Cancel into: " + CurrentAttackData.attackName);
         return true;
     }
@@ -239,10 +252,6 @@ public class CharacterCombat : MonoBehaviour
         {
             StartAttack(owner.lightAttack);
         }
-        //else
-        //{
-        //    BufferAction(BufferedAction.LightAttack);
-        //}
     }
 
     public void RequestHeavyAttack()
@@ -255,10 +264,6 @@ public class CharacterCombat : MonoBehaviour
         {
             StartAttack(owner.heavyAttack);
         }
-        //else
-        //{
-        //    BufferAction(BufferedAction.HeavyAttack);
-        //}
     }
 
     public void RegisterHit()

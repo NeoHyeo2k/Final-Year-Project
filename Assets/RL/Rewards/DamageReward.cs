@@ -9,8 +9,8 @@ public class DamageReward : MonoBehaviour
     public Health opponentHealth;
 
     [Header("Reward Settings")]
-    public float rewardPerHitEvent = 0.8f;
-    public float penaltyPerHitTakenEvent = -0.8f;
+    public float rewardPerHitEvent = 0.4f;
+    public float penaltyPerHitTakenEvent = -0.45f;
 
     [Header("Optional Damage Scaling")]
     public bool scaleByDamageAmount = false;

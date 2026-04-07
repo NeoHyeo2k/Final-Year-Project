@@ -1389,6 +1389,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1212141023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1212141025}
+  - component: {fileID: 1212141024}
+  m_Layer: 0
+  m_Name: TrainingStats
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1212141024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1212141023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ff5f06273971844b9ae239247e5e7a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  matchManager: {fileID: 243370608}
+  trackedFighter: {fileID: 4703547072117991408}
+  opponentFighter: {fileID: 7703608308200891317}
+  trackedHealth: {fileID: 4703547072117991402}
+  opponentHealth: {fileID: 7703608308200891310}
+  summaryEveryNRounds: 20
+  logEachRound: 1
+  logSummary: 1
+--- !u!4 &1212141025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1212141023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.028759, y: 2.642133, z: -0.010786579}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1741500324
 GameObject:
   m_ObjectHideFlags: 0
@@ -2282,8 +2334,8 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   selfHealth: {fileID: 4703547072117991402}
   opponentHealth: {fileID: 7703608308200891310}
-  rewardPerHitEvent: 0.8
-  penaltyPerHitTakenEvent: -0.8
+  rewardPerHitEvent: 0.4
+  penaltyPerHitTakenEvent: -0.45
   scaleByDamageAmount: 0
   rewardPerDamagePoint: 0
   penaltyPerDamagePointTaken: 0
@@ -2339,20 +2391,21 @@ MonoBehaviour:
   approachRewardScale: 0.012
   retreatPenaltyScale: 0.008
   tooClosePenaltyScale: 0.012
-  preferredRangeRewardPerSecond: 0.01
+  preferredRangeRewardPerSecond: 0.018
+  enterPreferredBandReward: 0.02
   maxSpacingRewardPerStep: 0.02
-  faceHugPenaltyPerSecond: -0.03
+  faceHugPenaltyPerSecond: -0.018
   faceHugDistance: 0.7
-  attackAttemptReward: 0.008
-  whiffPenalty: -0.06
+  attackAttemptReward: 0.015
+  whiffPenalty: -0.035
   attackAttemptLowerTolerance: 0
   attackAttemptUpperTolerance: 0.15
-  disengageReward: 0.05
-  disengageRequiredDistanceGain: 0.5
-  disengageWindow: 1
+  disengageReward: 0.08
+  disengageRequiredDistanceGain: 0.35
+  disengageWindow: 1.2
   inactivityThreshold: 1
   inactivityPenaltyInterval: 0.5
-  inactivityPenalty: -0.03
+  inactivityPenalty: -0.015
   movementEpsilon: 0.03
   debugLog: 0
 --- !u!114 &4703547072117991427
@@ -2660,3 +2713,4 @@ SceneRoots:
   - {fileID: 243370609}
   - {fileID: 1945319118}
   - {fileID: 2137067257}
+  - {fileID: 1212141025}
