@@ -2288,7 +2288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 53
+    VectorObservationSize: 57
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -2339,8 +2339,8 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   selfHealth: {fileID: 4703547072117991402}
   opponentHealth: {fileID: 7703608308200891310}
-  rewardPerHitEvent: 0.4
-  penaltyPerHitTakenEvent: -0.45
+  rewardPerHitEvent: 0.6
+  penaltyPerHitTakenEvent: -0.5
   scaleByDamageAmount: 0
   rewardPerDamagePoint: 0
   penaltyPerDamagePointTaken: 0
@@ -2399,13 +2399,13 @@ MonoBehaviour:
   approachRewardScale: 0.012
   retreatPenaltyScale: 0.008
   tooClosePenaltyScale: 0.012
-  preferredRangeRewardPerSecond: 0.018
-  enterPreferredBandReward: 0.02
-  maxSpacingRewardPerStep: 0.02
+  preferredRangeRewardPerSecond: 0.008
+  enterPreferredBandReward: 0.01
+  maxSpacingRewardPerStep: 0.01
   faceHugPenaltyPerSecond: -0.018
   faceHugDistance: 0.7
-  attackAttemptReward: 0.015
-  whiffPenalty: -0.035
+  attackAttemptReward: 0.01
+  whiffPenalty: -0.025
   attackAttemptLowerTolerance: 0
   attackAttemptUpperTolerance: 0.15
   disengageReward: 0.08

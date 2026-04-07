@@ -68,6 +68,11 @@ public class CombatObservationProvider : MonoBehaviour
             obs.Add(0f);
         }
 
+        obs.Add(self.CanAttack() ? 1f : 0f);
+        obs.Add(opponent.CanAttack() ? 1f : 0f);
+        obs.Add(opponent.CurrentAttackPhase == AttackPhase.Active ? 1f : 0f);
+        obs.Add(opponent.CurrentAttackPhase == AttackPhase.Recovery ? 1f : 0f);
+
         return obs.ToArray();
     }
 

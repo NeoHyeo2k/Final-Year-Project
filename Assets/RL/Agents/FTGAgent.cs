@@ -6,7 +6,7 @@ using Unity.MLAgents.Sensors;
 [RequireComponent(typeof(AgentInput))]
 public class FTGAgent : Agent
 {
-    private const int ObservationSize = 53;
+    private const int ObservationSize = 57;
 
     [Header("References")]
     public AgentInput agentInput;
@@ -28,6 +28,9 @@ public class FTGAgent : Agent
     public float lightAttackMaxDistance = 2.2f;
     public float heavyAttackMinDistance = 0.9f;
     public float heavyAttackMaxDistance = 2.2f;
+
+    [Header("Curriculum")]
+    public bool disableHeavyAttack = false;
 
     [Header("Debug")]
     public bool debugActionReceived = false;
@@ -141,6 +144,11 @@ public class FTGAgent : Agent
         if (useDistanceAwareAttackMask && opponentController != null)
         {
             ApplyDistanceAwareAttackMask(actionMask);
+        }
+
+        if (disableHeavyAttack)
+        {
+            actionMask.SetActionEnabled(2, 3, false);
         }
     }
 
