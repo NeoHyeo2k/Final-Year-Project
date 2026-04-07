@@ -39,6 +39,7 @@ public class CombatObservationProvider : MonoBehaviour
         obs.Add(self.IsBlocking ? 1f : 0f);
         obs.Add(self.FacingRight ? 1f : 0f);
         AddStateOneHot(obs, self.CurrentState);
+        AddAttackPhaseOneHot(obs, self.CurrentAttackPhase);
 
         obs.Add(oppPos.x / positionScale);
         obs.Add(oppPos.y / positionScale);
@@ -50,6 +51,7 @@ public class CombatObservationProvider : MonoBehaviour
         obs.Add(opponent.IsBlocking ? 1f : 0f);
         obs.Add(opponent.FacingRight ? 1f : 0f);
         AddStateOneHot(obs, opponent.CurrentState);
+        AddAttackPhaseOneHot(obs, opponent.CurrentAttackPhase);
 
         obs.Add((oppPos.x - selfPos.x) / positionScale);
         obs.Add((oppPos.y - selfPos.y) / positionScale);
@@ -89,6 +91,22 @@ public class CombatObservationProvider : MonoBehaviour
         for (int i = 0; i < states.Length; i++)
         {
             obs.Add(state == states[i] ? 1f : 0f);
+        }
+    }
+
+    void AddAttackPhaseOneHot(List<float> obs, AttackPhase phase)
+    {
+        AttackPhase[] phases = new AttackPhase[]
+        {
+            AttackPhase.None,
+            AttackPhase.Startup,
+            AttackPhase.Active,
+            AttackPhase.Recovery
+        };
+
+        for (int i = 0; i < phases.Length; i++)
+        {
+            obs.Add(phase == phases[i] ? 1f : 0f);
         }
     }
 }

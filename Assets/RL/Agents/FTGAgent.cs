@@ -6,6 +6,8 @@ using Unity.MLAgents.Sensors;
 [RequireComponent(typeof(AgentInput))]
 public class FTGAgent : Agent
 {
+    private const int ObservationSize = 53;
+
     [Header("References")]
     public AgentInput agentInput;
     public CombatObservationProvider observationProvider;
@@ -19,6 +21,13 @@ public class FTGAgent : Agent
 
     [Header("Reward")]
     public float stepPenalty = 0f;
+
+    [Header("Action Mask")]
+    public bool useDistanceAwareAttackMask = true;
+    public float lightAttackMinDistance = 0f;
+    public float lightAttackMaxDistance = 2.2f;
+    public float heavyAttackMinDistance = 0.9f;
+    public float heavyAttackMaxDistance = 2.2f;
 
     [Header("Debug")]
     public bool debugActionReceived = false;
@@ -54,7 +63,7 @@ public class FTGAgent : Agent
 
         if (agentInput != null)
         {
-            agentInput.SetBranchActions(0, 0, 0);
+            agentInput.ResetTemporalState();
         }
     }
 
@@ -62,7 +71,7 @@ public class FTGAgent : Agent
     {
         if (observationProvider == null)
         {
-            sensor.AddObservation(new float[45]);
+            sensor.AddObservation(new float[ObservationSize]);
             return;
         }
 
@@ -70,11 +79,96 @@ public class FTGAgent : Agent
 
         if (obs == null || obs.Length == 0)
         {
-            sensor.AddObservation(new float[45]);
+            sensor.AddObservation(new float[ObservationSize]);
             return;
         }
 
         sensor.AddObservation(obs);
+    }
+
+    public override void WriteDiscreteActionMask(IDiscreteActionMask actionMask)
+    {
+        if (actionMask == null || selfController == null)
+            return;
+
+        if (matchManager == null || !matchManager.RoundActive)
+        {
+            MaskAllActiveControls(actionMask);
+            return;
+        }
+
+        // Branch index 1: posture, 0 none, 1 jump, 2 crouch
+        if (!selfController.CanJump())
+        {
+            actionMask.SetActionEnabled(1, 1, false);
+        }
+
+        if (!selfController.CanCrouch())
+        {
+            actionMask.SetActionEnabled(1, 2, false);
+        }
+
+        // Branch index 2: combat, 0 none, 1 block, 2 light, 3 heavy
+        if (selfController.IsAttacking || selfController.IsDashing)
+        {
+            actionMask.SetActionEnabled(2, 1, false);
+        }
+
+        bool canStartAttack = selfController.CanAttack();
+        bool canTryRecoveryCancel =
+            selfController.allowLightAttackCancel &&
+            selfController.IsAttacking &&
+            selfController.CurrentAttackPhase == AttackPhase.Recovery;
+
+        if (!canStartAttack && !canTryRecoveryCancel)
+        {
+            actionMask.SetActionEnabled(2, 2, false);
+            actionMask.SetActionEnabled(2, 3, false);
+        }
+
+        if (selfController.HasBufferedAction)
+        {
+            actionMask.SetActionEnabled(2, 2, false);
+            actionMask.SetActionEnabled(2, 3, false);
+        }
+
+        if (agentInput != null && agentInput.AttackGapActive)
+        {
+            actionMask.SetActionEnabled(2, 2, false);
+            actionMask.SetActionEnabled(2, 3, false);
+        }
+
+        if (useDistanceAwareAttackMask && opponentController != null)
+        {
+            ApplyDistanceAwareAttackMask(actionMask);
+        }
+    }
+
+    private void MaskAllActiveControls(IDiscreteActionMask actionMask)
+    {
+        actionMask.SetActionEnabled(0, 1, false);
+        actionMask.SetActionEnabled(0, 2, false);
+        actionMask.SetActionEnabled(1, 1, false);
+        actionMask.SetActionEnabled(1, 2, false);
+        actionMask.SetActionEnabled(2, 1, false);
+        actionMask.SetActionEnabled(2, 2, false);
+        actionMask.SetActionEnabled(2, 3, false);
+    }
+
+    private void ApplyDistanceAwareAttackMask(IDiscreteActionMask actionMask)
+    {
+        // Coarse horizontal curriculum gate. This is not a final hitbox-range model.
+        float distance = Mathf.Abs(opponentController.transform.position.x - selfController.transform.position.x);
+
+        if (distance < lightAttackMinDistance || distance > lightAttackMaxDistance)
+        {
+            actionMask.SetActionEnabled(2, 2, false);
+        }
+
+        if (distance < heavyAttackMinDistance || distance > heavyAttackMaxDistance)
+        {
+            actionMask.SetActionEnabled(2, 3, false);
+        }
     }
 
     public override void OnActionReceived(ActionBuffers actions)

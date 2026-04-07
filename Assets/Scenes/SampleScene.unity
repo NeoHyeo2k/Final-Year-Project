@@ -2269,6 +2269,11 @@ MonoBehaviour:
   endEpisodeOnRoundEnd: 1
   restartRoundFromAgent: 0
   stepPenalty: -0.001
+  useDistanceAwareAttackMask: 1
+  lightAttackMinDistance: 0
+  lightAttackMaxDistance: 2.2
+  heavyAttackMinDistance: 0.9
+  heavyAttackMaxDistance: 2.2
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2283,7 +2288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 45
+    VectorObservationSize: 53
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -2367,6 +2372,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   repeatedAttackInterval: 0.2
+  edgeTriggeredAttacksOnly: 1
+  useAttackGap: 1
+  minAttackGap: 0.22
   debugActions: 0
 --- !u!114 &4703547072117991426
 MonoBehaviour:
@@ -2558,16 +2566,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 739359083}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1041237c0d018674194831e2d8534810, type: 3}
+  m_Script: {fileID: 11500000, guid: bd058f6bf05762644a76828302c07b51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4703547072117991408}
-  approachDistance: 2.5
-  attackDistance: 1.2
-  thinkInterval: 0.15
-  blockChanceWhenClose: 0.2
-  heavyAttackChance: 0.35
-  jumpChance: 0.08
+  approachDistance: 2.6
+  attackDistance: 1.1
+  thinkInterval: 0.35
+  blockChanceWhenClose: 0.05
+  heavyAttackChance: 0.15
+  lightAttackChance: 0.35
+  jumpChance: 0.02
+  idleChanceWhenClose: 0.45
 --- !u!114 &7703608308200891312
 MonoBehaviour:
   m_ObjectHideFlags: 0

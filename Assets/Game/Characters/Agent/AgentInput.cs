@@ -8,6 +8,9 @@ public class AgentInput : MonoBehaviour
     [Header("Attack Repeat")]
     [Tooltip("持续选择攻击动作时，允许再次请求攻击的最小间隔")]
     public float repeatedAttackInterval = 0.18f;
+    public bool edgeTriggeredAttacksOnly = true;
+    public bool useAttackGap = true;
+    public float minAttackGap = 0.22f;
 
     [Header("Debug")]
     public bool debugActions = false;
@@ -23,6 +26,9 @@ public class AgentInput : MonoBehaviour
 
     private float lightAttackTimer = 0f;
     private float heavyAttackTimer = 0f;
+    private float attackGapTimer = 0f;
+
+    public bool AttackGapActive => useAttackGap && attackGapTimer > 0f;
 
     void Start()
     {
@@ -42,6 +48,11 @@ public class AgentInput : MonoBehaviour
 
         lightAttackTimer += Time.deltaTime;
         heavyAttackTimer += Time.deltaTime;
+
+        if (attackGapTimer > 0f)
+        {
+            attackGapTimer -= Time.deltaTime;
+        }
 
         BuildCommandFromBranchActions();
 
@@ -82,12 +93,32 @@ public class AgentInput : MonoBehaviour
         }
     }
 
+    public void ResetTemporalState()
+    {
+        command = FighterCommand.Empty;
+
+        currentMoveAction = 0;
+        currentPostureAction = 0;
+        currentCombatAction = 0;
+
+        previousMoveAction = 0;
+        previousPostureAction = 0;
+        previousCombatAction = 0;
+
+        lightAttackTimer = 0f;
+        heavyAttackTimer = 0f;
+        attackGapTimer = 0f;
+    }
+
     private void BuildCommandFromBranchActions()
     {
         FighterCommand next = FighterCommand.Empty;
 
         bool postureChanged = currentPostureAction != previousPostureAction;
         bool combatChanged = currentCombatAction != previousCombatAction;
+        bool attackStartedThisFrame =
+            IsAttackAction(currentCombatAction) &&
+            !IsAttackAction(previousCombatAction);
 
         // Branch 1: Move
         switch (currentMoveAction)
@@ -130,18 +161,20 @@ public class AgentInput : MonoBehaviour
                 break;
 
             case 2:
-                if (ShouldRequestLightAttack(combatChanged))
+                if (ShouldRequestLightAttack(attackStartedThisFrame, combatChanged))
                 {
                     next.lightAttackPressed = true;
                     lightAttackTimer = 0f;
+                    StartAttackGap();
                 }
                 break;
 
             case 3:
-                if (ShouldRequestHeavyAttack(combatChanged))
+                if (ShouldRequestHeavyAttack(attackStartedThisFrame, combatChanged))
                 {
                     next.heavyAttackPressed = true;
                     heavyAttackTimer = 0f;
+                    StartAttackGap();
                 }
                 break;
         }
@@ -149,9 +182,15 @@ public class AgentInput : MonoBehaviour
         command = next;
     }
 
-    private bool ShouldRequestLightAttack(bool combatChanged)
+    private bool ShouldRequestLightAttack(bool attackStartedThisFrame, bool combatChanged)
     {
         if (controller == null) return false;
+
+        if (AttackGapActive)
+            return false;
+
+        if (edgeTriggeredAttacksOnly)
+            return attackStartedThisFrame;
 
         if (combatChanged)
             return true;
@@ -168,9 +207,15 @@ public class AgentInput : MonoBehaviour
         return true;
     }
 
-    private bool ShouldRequestHeavyAttack(bool combatChanged)
+    private bool ShouldRequestHeavyAttack(bool attackStartedThisFrame, bool combatChanged)
     {
         if (controller == null) return false;
+
+        if (AttackGapActive)
+            return false;
+
+        if (edgeTriggeredAttacksOnly)
+            return attackStartedThisFrame;
 
         if (combatChanged)
             return true;
@@ -185,5 +230,18 @@ public class AgentInput : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private bool IsAttackAction(int combatAction)
+    {
+        return combatAction == 2 || combatAction == 3;
+    }
+
+    private void StartAttackGap()
+    {
+        if (!useAttackGap)
+            return;
+
+        attackGapTimer = minAttackGap;
     }
 }
