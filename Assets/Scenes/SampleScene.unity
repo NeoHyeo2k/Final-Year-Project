@@ -2274,6 +2274,7 @@ MonoBehaviour:
   lightAttackMaxDistance: 2.2
   heavyAttackMinDistance: 0.9
   heavyAttackMaxDistance: 2.2
+  disableHeavyAttack: 0
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2321,9 +2322,13 @@ MonoBehaviour:
   agent: {fileID: 4703547072117991413}
   matchManager: {fileID: 243370608}
   selfController: {fileID: 4703547072117991408}
+  selfHealth: {fileID: 4703547072117991402}
+  opponentHealth: {fileID: 7703608308200891310}
   winReward: 8
   losePenalty: -8
   drawReward: 0
+  terminalHealthDiffScale: 1
+  useTerminalHealthDiffReward: 1
 --- !u!114 &4703547072117991417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2390,31 +2395,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent: {fileID: 4703547072117991413}
   self: {fileID: 4703547072117991408}
-  opponent: {fileID: 7703608308200891317}
-  selfHealth: {fileID: 4703547072117991402}
-  opponentHealth: {fileID: 7703608308200891310}
   matchManager: {fileID: 243370608}
-  preferredMinDistance: 1
-  preferredMaxDistance: 2.2
-  approachRewardScale: 0.012
-  retreatPenaltyScale: 0.008
-  tooClosePenaltyScale: 0.012
-  preferredRangeRewardPerSecond: 0.008
-  enterPreferredBandReward: 0.01
-  maxSpacingRewardPerStep: 0.01
-  faceHugPenaltyPerSecond: -0.018
-  faceHugDistance: 0.7
-  attackAttemptReward: 0.01
-  whiffPenalty: -0.025
-  attackAttemptLowerTolerance: 0
-  attackAttemptUpperTolerance: 0.15
-  disengageReward: 0.08
-  disengageRequiredDistanceGain: 0.35
-  disengageWindow: 1.2
-  inactivityThreshold: 1
-  inactivityPenaltyInterval: 0.5
-  inactivityPenalty: -0.015
-  movementEpsilon: 0.03
+  successfulBlockReward: 0.05
+  postBlockPunishReward: 0.1
+  postBlockPunishWindow: 0.5
+  requireRoundActive: 1
   debugLog: 0
 --- !u!114 &4703547072117991427
 MonoBehaviour:
