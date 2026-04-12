@@ -13,6 +13,92 @@ public class CombatObservationProvider : MonoBehaviour
     public float positionScale = 10f;
     public float velocityScale = 10f;
     public float timeScale = 30f;
+    public float damageRecencyScale = 2f;
+
+    private float timeSinceSelfDamaged = 999f;
+    private float timeSinceOpponentDamaged = 999f;
+
+    private void OnEnable()
+    {
+        Subscribe();
+        ResetDamageRecency();
+    }
+
+    private void Start()
+    {
+        Subscribe();
+        ResetDamageRecency();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void Update()
+    {
+        timeSinceSelfDamaged += Time.deltaTime;
+        timeSinceOpponentDamaged += Time.deltaTime;
+    }
+
+    private void Subscribe()
+    {
+        if (selfHealth != null)
+        {
+            selfHealth.OnDamaged -= HandleSelfDamaged;
+            selfHealth.OnDamaged += HandleSelfDamaged;
+        }
+
+        if (opponentHealth != null)
+        {
+            opponentHealth.OnDamaged -= HandleOpponentDamaged;
+            opponentHealth.OnDamaged += HandleOpponentDamaged;
+        }
+
+        if (matchManager != null)
+        {
+            matchManager.OnRoundStarted -= HandleRoundStarted;
+            matchManager.OnRoundStarted += HandleRoundStarted;
+        }
+    }
+
+    private void Unsubscribe()
+    {
+        if (selfHealth != null)
+            selfHealth.OnDamaged -= HandleSelfDamaged;
+
+        if (opponentHealth != null)
+            opponentHealth.OnDamaged -= HandleOpponentDamaged;
+
+        if (matchManager != null)
+            matchManager.OnRoundStarted -= HandleRoundStarted;
+    }
+
+    private void HandleSelfDamaged(int damage)
+    {
+        timeSinceSelfDamaged = 0f;
+    }
+
+    private void HandleOpponentDamaged(int damage)
+    {
+        timeSinceOpponentDamaged = 0f;
+    }
+
+    private void HandleRoundStarted()
+    {
+        ResetDamageRecency();
+    }
+
+    private void ResetDamageRecency()
+    {
+        timeSinceSelfDamaged = damageRecencyScale;
+        timeSinceOpponentDamaged = damageRecencyScale;
+    }
 
     public float[] GetObservationVector()
     {
@@ -72,6 +158,10 @@ public class CombatObservationProvider : MonoBehaviour
         obs.Add(opponent.CanAttack() ? 1f : 0f);
         obs.Add(opponent.CurrentAttackPhase == AttackPhase.Active ? 1f : 0f);
         obs.Add(opponent.CurrentAttackPhase == AttackPhase.Recovery ? 1f : 0f);
+        obs.Add(Mathf.Clamp01(timeSinceSelfDamaged / Mathf.Max(0.01f, damageRecencyScale)));
+        obs.Add(Mathf.Clamp01(timeSinceOpponentDamaged / Mathf.Max(0.01f, damageRecencyScale)));
+        obs.Add(self.IsInHitstun ? 1f : 0f);
+        obs.Add(opponent.IsInHitstun ? 1f : 0f);
 
         return obs.ToArray();
     }

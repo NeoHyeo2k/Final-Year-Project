@@ -22,6 +22,9 @@ public class RuleBasedInput : MonoBehaviour
     [Range(0f, 1f)]
     public float jumpChance = 0.08f;
 
+    [Tooltip("Disable heavy attacks for the rule-based opponent during training.")]
+    public bool disableHeavyAttack = true;
+
     private FighterController controller;
     private float thinkTimer;
 
@@ -66,7 +69,7 @@ public class RuleBasedInput : MonoBehaviour
             controller.RequestLightAttack();
         }
 
-        if (currentCommand.heavyAttackPressed)
+        if (!disableHeavyAttack && currentCommand.heavyAttackPressed)
         {
             controller.RequestHeavyAttack();
         }
@@ -101,7 +104,7 @@ public class RuleBasedInput : MonoBehaviour
                 return cmd;
             }
 
-            if (Random.value < heavyAttackChance)
+            if (!disableHeavyAttack && Random.value < heavyAttackChance)
             {
                 cmd.heavyAttackPressed = true;
             }

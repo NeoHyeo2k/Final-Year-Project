@@ -1,39 +1,52 @@
 using UnityEngine;
 
-public class RuleBasedInput_Easy : MonoBehaviour
+public class RuleBasedInput_Train_1 : MonoBehaviour
 {
     [Header("Target")]
     public FighterController target;
 
     [Header("Ranges")]
-    public float approachDistance = 2.6f;
-    public float attackDistance = 1.1f;
+    [Tooltip("If farther than this, keep walking toward the target.")]
+    public float approachDistance = 2.4f;
+
+    [Tooltip("Primary training range where the opponent starts creating attack/block samples.")]
+    public float attackDistance = 1.25f;
 
     [Header("Timing")]
-    public float thinkInterval = 0.35f;
+    [Tooltip("How often the opponent refreshes its high-level decision.")]
+    public float thinkInterval = 0.18f;
 
     [Header("Behavior")]
     [Range(0f, 1f)]
-    public float blockChanceWhenClose = 0.05f;
+    [Tooltip("Chance to hold block when both fighters are in close range.")]
+    public float blockChanceWhenClose = 0.22f;
 
     [Range(0f, 1f)]
-    public float heavyAttackChance = 0.15f;
+    [Tooltip("Chance to stay idle briefly when close. Kept modest to reduce dead air.")]
+    public float idleChanceWhenClose = 0.18f;
 
     [Range(0f, 1f)]
-    public float lightAttackChance = 0.35f;
+    [Tooltip("Chance to use a light attack when close and not blocking/idling.")]
+    public float lightAttackChance = 0.55f;
 
     [Range(0f, 1f)]
-    public float jumpChance = 0.02f;
+    [Tooltip("Chance to jump when close. Keep low to preserve grounded timing samples.")]
+    public float jumpChance = 0.03f;
 
-    [Range(0f, 1f)]
-    public float idleChanceWhenClose = 0.45f;
-
-    [Tooltip("Disable heavy attacks for the rule-based opponent during training.")]
+    [Tooltip("Disable heavy attacks for this training opponent to keep the action distribution simple.")]
     public bool disableHeavyAttack = true;
 
+    [Header("Pressure Response")]
+    [Tooltip("When the target is attacking in range, prefer blocking instead of scrambling.")]
+    public bool reactiveBlockAgainstActiveAttack = true;
+
+    [Tooltip("Extra chance to block while the target is in active attack frames nearby.")]
+    [Range(0f, 1f)]
+    public float extraBlockChanceVsActiveAttack = 0.45f;
+
     private FighterController controller;
-    private float thinkTimer;
     private FighterCommand currentCommand;
+    private float thinkTimer;
 
     private void Start()
     {
@@ -44,8 +57,8 @@ public class RuleBasedInput_Easy : MonoBehaviour
             DLog.LogError("FighterController not found on " + gameObject.name);
         }
 
-        thinkTimer = 0f;
         currentCommand = FighterCommand.Empty;
+        thinkTimer = 0f;
     }
 
     private void Update()
@@ -100,14 +113,14 @@ public class RuleBasedInput_Easy : MonoBehaviour
             return cmd;
         }
 
-        float roll = Random.value;
-
-        if (roll < idleChanceWhenClose)
+        if (ShouldReactiveBlock(distance))
         {
+            cmd.blockHeld = true;
             return cmd;
         }
 
-        roll -= idleChanceWhenClose;
+        float roll = Random.value;
+
         if (roll < blockChanceWhenClose)
         {
             cmd.blockHeld = true;
@@ -115,6 +128,12 @@ public class RuleBasedInput_Easy : MonoBehaviour
         }
 
         roll -= blockChanceWhenClose;
+        if (roll < idleChanceWhenClose)
+        {
+            return cmd;
+        }
+
+        roll -= idleChanceWhenClose;
         if (roll < jumpChance)
         {
             cmd.jumpPressed = true;
@@ -122,22 +141,27 @@ public class RuleBasedInput_Easy : MonoBehaviour
         }
 
         roll -= jumpChance;
-        if (!disableHeavyAttack && roll < heavyAttackChance)
-        {
-            cmd.heavyAttackPressed = true;
-            return cmd;
-        }
-
-        if (!disableHeavyAttack)
-        {
-            roll -= heavyAttackChance;
-        }
-
         if (roll < lightAttackChance)
         {
             cmd.lightAttackPressed = true;
+            return cmd;
         }
 
+        cmd.move = Mathf.Sign(dx);
         return cmd;
+    }
+
+    private bool ShouldReactiveBlock(float distance)
+    {
+        if (!reactiveBlockAgainstActiveAttack)
+            return false;
+
+        if (distance > attackDistance)
+            return false;
+
+        if (target.CurrentAttackPhase != AttackPhase.Active)
+            return false;
+
+        return Random.value < extraBlockChanceVsActiveAttack;
     }
 }

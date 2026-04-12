@@ -10,32 +10,28 @@ public class RoundStatsTracker : MonoBehaviour
     public Health opponentHealth;
 
     [Header("Logging")]
-    [Tooltip("每多少局打印一次 summary")]
     public int summaryEveryNRounds = 20;
-
-    [Tooltip("是否打印每局详细结果")]
     public bool logEachRound = true;
-
-    [Tooltip("是否打印阶段性 summary")]
     public bool logSummary = true;
 
-    // Lifetime totals
+    [Header("Derived Metrics")]
+    [Tooltip("A hit landed by the tracked fighter within this window after a successful block counts as a post-block punish.")]
+    public float postBlockPunishWindow = 0.5f;
+
     private int totalRounds = 0;
     private int totalWins = 0;
     private int totalLosses = 0;
     private int totalDraws = 0;
 
     private float totalRoundDuration = 0f;
-    private float totalRewardProxy = 0f; // 这里只做占位，不直接从 agent 读 reward
-
     private int totalHitsDealt = 0;
     private int totalHitsTaken = 0;
-    private int totalBlocksPerformed = 0;   // 自己成功防住次数
-    private int totalAttacksBlocked = 0;    // 自己打出去但被对面防住次数
+    private int totalBlocksPerformed = 0;
+    private int totalOwnAttacksBlockedByOpponent = 0;
     private int totalAttackAttempts = 0;
     private int totalWhiffs = 0;
+    private int totalPostBlockPunishes = 0;
 
-    // Window totals
     private int windowRounds = 0;
     private int windowWins = 0;
     private int windowLosses = 0;
@@ -45,20 +41,24 @@ public class RoundStatsTracker : MonoBehaviour
     private int windowHitsDealt = 0;
     private int windowHitsTaken = 0;
     private int windowBlocksPerformed = 0;
-    private int windowAttacksBlocked = 0;
+    private int windowOwnAttacksBlockedByOpponent = 0;
     private int windowAttackAttempts = 0;
     private int windowWhiffs = 0;
+    private int windowPostBlockPunishes = 0;
 
-    // Current round
     private bool roundTrackingActive = false;
     private float roundStartTime = 0f;
 
     private int roundHitsDealt = 0;
     private int roundHitsTaken = 0;
     private int roundBlocksPerformed = 0;
-    private int roundAttacksBlocked = 0;
+    private int roundOwnAttacksBlockedByOpponent = 0;
     private int roundAttackAttempts = 0;
     private int roundWhiffs = 0;
+    private int roundPostBlockPunishes = 0;
+
+    private bool postBlockPunishWindowActive = false;
+    private float postBlockPunishTimer = 0f;
 
     private void OnEnable()
     {
@@ -78,6 +78,19 @@ public class RoundStatsTracker : MonoBehaviour
     private void OnDestroy()
     {
         Unsubscribe();
+    }
+
+    private void Update()
+    {
+        if (!postBlockPunishWindowActive)
+            return;
+
+        postBlockPunishTimer -= Time.deltaTime;
+
+        if (postBlockPunishTimer <= 0f)
+        {
+            ClearPostBlockPunishWindow();
+        }
     }
 
     private void Subscribe()
@@ -120,29 +133,27 @@ public class RoundStatsTracker : MonoBehaviour
 
     private void HandleRoundStarted()
     {
-        // 临时调试;
-        // Debug.Log("[RoundStatsTracker] HandleRoundStarted fired.");
-
         roundTrackingActive = true;
         roundStartTime = Time.time;
 
         roundHitsDealt = 0;
         roundHitsTaken = 0;
         roundBlocksPerformed = 0;
-        roundAttacksBlocked = 0;
+        roundOwnAttacksBlockedByOpponent = 0;
         roundAttackAttempts = 0;
         roundWhiffs = 0;
+        roundPostBlockPunishes = 0;
+
+        ClearPostBlockPunishWindow();
     }
 
     private void HandleRoundEnded(FighterController winner, FighterController loser, bool draw)
     {
-        // 临时调试;
-        // Debug.Log("[RoundStatsTracker] HandleRoundEnded fired.");
-
         if (!roundTrackingActive)
             return;
 
         roundTrackingActive = false;
+        ClearPostBlockPunishWindow();
 
         float duration = Time.time - roundStartTime;
         totalRounds++;
@@ -154,16 +165,18 @@ public class RoundStatsTracker : MonoBehaviour
         totalHitsDealt += roundHitsDealt;
         totalHitsTaken += roundHitsTaken;
         totalBlocksPerformed += roundBlocksPerformed;
-        totalAttacksBlocked += roundAttacksBlocked;
+        totalOwnAttacksBlockedByOpponent += roundOwnAttacksBlockedByOpponent;
         totalAttackAttempts += roundAttackAttempts;
         totalWhiffs += roundWhiffs;
+        totalPostBlockPunishes += roundPostBlockPunishes;
 
         windowHitsDealt += roundHitsDealt;
         windowHitsTaken += roundHitsTaken;
         windowBlocksPerformed += roundBlocksPerformed;
-        windowAttacksBlocked += roundAttacksBlocked;
+        windowOwnAttacksBlockedByOpponent += roundOwnAttacksBlockedByOpponent;
         windowAttackAttempts += roundAttackAttempts;
         windowWhiffs += roundWhiffs;
+        windowPostBlockPunishes += roundPostBlockPunishes;
 
         string result;
         if (draw)
@@ -194,8 +207,8 @@ public class RoundStatsTracker : MonoBehaviour
                 $"[RoundStats] Round {totalRounds} | Result={result} | Duration={duration:F2}s | " +
                 $"SelfHP={selfHp} | OppHP={oppHp} | " +
                 $"HitsDealt={roundHitsDealt} | HitsTaken={roundHitsTaken} | " +
-                $"BlocksPerformed={roundBlocksPerformed} | AttacksBlocked={roundAttacksBlocked} | " +
-                $"AttackAttempts={roundAttackAttempts} | Whiffs={roundWhiffs}"
+                $"BlocksPerformed={roundBlocksPerformed} | OwnAttacksBlockedByOpponent={roundOwnAttacksBlockedByOpponent} | " +
+                $"PostBlockPunishes={roundPostBlockPunishes} | AttackAttempts={roundAttackAttempts} | Whiffs={roundWhiffs}"
             );
         }
 
@@ -214,6 +227,12 @@ public class RoundStatsTracker : MonoBehaviour
         if (attacker == trackedFighter)
         {
             roundHitsDealt++;
+
+            if (postBlockPunishWindowActive)
+            {
+                roundPostBlockPunishes++;
+                ClearPostBlockPunishWindow();
+            }
         }
 
         if (defender == trackedFighter)
@@ -230,11 +249,13 @@ public class RoundStatsTracker : MonoBehaviour
         if (defender == trackedFighter)
         {
             roundBlocksPerformed++;
+            postBlockPunishWindowActive = true;
+            postBlockPunishTimer = postBlockPunishWindow;
         }
 
         if (attacker == trackedFighter)
         {
-            roundAttacksBlocked++;
+            roundOwnAttacksBlockedByOpponent++;
         }
     }
 
@@ -266,8 +287,10 @@ public class RoundStatsTracker : MonoBehaviour
         float avgDuration = windowRounds > 0 ? windowRoundDuration / windowRounds : 0f;
         float avgHitsDealt = windowRounds > 0 ? (float)windowHitsDealt / windowRounds : 0f;
         float avgHitsTaken = windowRounds > 0 ? (float)windowHitsTaken / windowRounds : 0f;
+        float hitDelta = avgHitsDealt - avgHitsTaken;
         float avgBlocksPerformed = windowRounds > 0 ? (float)windowBlocksPerformed / windowRounds : 0f;
-        float avgAttacksBlocked = windowRounds > 0 ? (float)windowAttacksBlocked / windowRounds : 0f;
+        float avgOwnAttacksBlockedByOpponent = windowRounds > 0 ? (float)windowOwnAttacksBlockedByOpponent / windowRounds : 0f;
+        float avgPostBlockPunishes = windowRounds > 0 ? (float)windowPostBlockPunishes / windowRounds : 0f;
         float avgAttackAttempts = windowRounds > 0 ? (float)windowAttackAttempts / windowRounds : 0f;
         float avgWhiffs = windowRounds > 0 ? (float)windowWhiffs / windowRounds : 0f;
         float whiffRate = windowAttackAttempts > 0 ? (float)windowWhiffs / windowAttackAttempts : 0f;
@@ -276,9 +299,10 @@ public class RoundStatsTracker : MonoBehaviour
             $"[RoundStats Summary] Last {windowRounds} rounds | " +
             $"W={windowWins} L={windowLosses} D={windowDraws} | " +
             $"WinRate={winRate:P1} | AvgDuration={avgDuration:F2}s | " +
-            $"AvgHitsDealt={avgHitsDealt:F2} | AvgHitsTaken={avgHitsTaken:F2} | " +
-            $"AvgBlocksPerformed={avgBlocksPerformed:F2} | AvgAttacksBlocked={avgAttacksBlocked:F2} | " +
-            $"AvgAttackAttempts={avgAttackAttempts:F2} | AvgWhiffs={avgWhiffs:F2} | WhiffRate={whiffRate:P1}"
+            $"AvgHitsDealt={avgHitsDealt:F2} | AvgHitsTaken={avgHitsTaken:F2} | HitDelta={hitDelta:F2} | " +
+            $"AvgBlocksPerformed={avgBlocksPerformed:F2} | AvgOwnAttacksBlockedByOpponent={avgOwnAttacksBlockedByOpponent:F2} | " +
+            $"AvgPostBlockPunishes={avgPostBlockPunishes:F2} | AvgAttackAttempts={avgAttackAttempts:F2} | " +
+            $"AvgWhiffs={avgWhiffs:F2} | WhiffRate={whiffRate:P1}"
         );
     }
 
@@ -293,8 +317,15 @@ public class RoundStatsTracker : MonoBehaviour
         windowHitsDealt = 0;
         windowHitsTaken = 0;
         windowBlocksPerformed = 0;
-        windowAttacksBlocked = 0;
+        windowOwnAttacksBlockedByOpponent = 0;
         windowAttackAttempts = 0;
         windowWhiffs = 0;
+        windowPostBlockPunishes = 0;
+    }
+
+    private void ClearPostBlockPunishWindow()
+    {
+        postBlockPunishWindowActive = false;
+        postBlockPunishTimer = 0f;
     }
 }

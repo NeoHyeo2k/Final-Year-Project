@@ -6,7 +6,7 @@ using Unity.MLAgents.Sensors;
 [RequireComponent(typeof(AgentInput))]
 public class FTGAgent : Agent
 {
-    private const int ObservationSize = 57;
+    private const int ObservationSize = 61;
 
     [Header("References")]
     public AgentInput agentInput;

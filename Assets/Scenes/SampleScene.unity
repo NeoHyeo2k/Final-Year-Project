@@ -1426,6 +1426,7 @@ MonoBehaviour:
   summaryEveryNRounds: 20
   logEachRound: 1
   logSummary: 1
+  postBlockPunishWindow: 0.5
 --- !u!4 &1212141025
 Transform:
   m_ObjectHideFlags: 0
@@ -2245,6 +2246,7 @@ MonoBehaviour:
   positionScale: 10
   velocityScale: 10
   timeScale: 30
+  damageRecencyScale: 2
 --- !u!114 &4703547072117991413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2274,7 +2276,7 @@ MonoBehaviour:
   lightAttackMaxDistance: 2.2
   heavyAttackMinDistance: 0.9
   heavyAttackMaxDistance: 2.2
-  disableHeavyAttack: 0
+  disableHeavyAttack: 1
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2289,7 +2291,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 57
+    VectorObservationSize: 61
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -2397,7 +2399,7 @@ MonoBehaviour:
   self: {fileID: 4703547072117991408}
   matchManager: {fileID: 243370608}
   successfulBlockReward: 0.05
-  postBlockPunishReward: 0.1
+  postBlockPunishReward: 0
   postBlockPunishWindow: 0.5
   requireRoundActive: 1
   debugLog: 0
@@ -2519,7 +2521,7 @@ PrefabInstance:
       addedObject: {fileID: 7703608308200891312}
     - targetCorrespondingSourceObject: {fileID: 2111095038228447074, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7703608308200891311}
+      addedObject: {fileID: 7703608308200891318}
   m_SourcePrefab: {fileID: 100100000, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
 --- !u!4 &7703608308200891302 stripped
 Transform:
@@ -2542,27 +2544,6 @@ MonoBehaviour:
   currentHealth: 10
   displayName: Opponent
   drawHealthOnScreen: 1
---- !u!114 &7703608308200891311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 739359083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd058f6bf05762644a76828302c07b51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 4703547072117991408}
-  approachDistance: 2.6
-  attackDistance: 1.1
-  thinkInterval: 0.35
-  blockChanceWhenClose: 0.05
-  heavyAttackChance: 0.15
-  lightAttackChance: 0.35
-  jumpChance: 0.02
-  idleChanceWhenClose: 0.45
 --- !u!114 &7703608308200891312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2695,6 +2676,29 @@ MonoBehaviour:
   combat: {fileID: 7703608308200891314}
   hurtboxManager: {fileID: 7703608308200891313}
   attackName: 
+--- !u!114 &7703608308200891318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739359083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1d39423fc076b94da08327f5df3fb38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  approachDistance: 2.4
+  attackDistance: 1.25
+  thinkInterval: 0.18
+  blockChanceWhenClose: 0.22
+  idleChanceWhenClose: 0.18
+  lightAttackChance: 0.55
+  jumpChance: 0.03
+  disableHeavyAttack: 1
+  reactiveBlockAgainstActiveAttack: 1
+  extraBlockChanceVsActiveAttack: 0.45
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

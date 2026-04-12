@@ -16,7 +16,7 @@ public class MatchManager : MonoBehaviour
     public Transform spawnB;
 
     [Header("Round Settings")]
-    public float roundDuration = 200f;
+    public float roundDuration = 30f;
     public bool autoRestartRound = true;
     public float restartDelay = 2f;
 
