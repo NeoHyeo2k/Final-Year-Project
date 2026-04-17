@@ -14,20 +14,20 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
 
     [Header("Timing")]
     [Tooltip("How often the opponent refreshes its high-level decision.")]
-    public float thinkInterval = 0.18f;
+    public float thinkInterval = 0.26f;
 
     [Header("Behavior")]
     [Range(0f, 1f)]
     [Tooltip("Chance to hold block when both fighters are in close range.")]
-    public float blockChanceWhenClose = 0.22f;
+    public float blockChanceWhenClose = 0.14f;
 
     [Range(0f, 1f)]
     [Tooltip("Chance to stay idle briefly when close. Kept modest to reduce dead air.")]
-    public float idleChanceWhenClose = 0.18f;
+    public float idleChanceWhenClose = 0.28f;
 
     [Range(0f, 1f)]
     [Tooltip("Chance to use a light attack when close and not blocking/idling.")]
-    public float lightAttackChance = 0.55f;
+    public float lightAttackChance = 0.38f;
 
     [Range(0f, 1f)]
     [Tooltip("Chance to jump when close. Keep low to preserve grounded timing samples.")]
@@ -42,7 +42,7 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
 
     [Tooltip("Extra chance to block while the target is in active attack frames nearby.")]
     [Range(0f, 1f)]
-    public float extraBlockChanceVsActiveAttack = 0.45f;
+    public float extraBlockChanceVsActiveAttack = 0.22f;
 
     private FighterController controller;
     private FighterCommand currentCommand;

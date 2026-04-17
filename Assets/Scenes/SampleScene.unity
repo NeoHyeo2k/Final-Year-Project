@@ -2521,7 +2521,7 @@ PrefabInstance:
       addedObject: {fileID: 7703608308200891312}
     - targetCorrespondingSourceObject: {fileID: 2111095038228447074, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7703608308200891318}
+      addedObject: {fileID: 7703608308200891322}
   m_SourcePrefab: {fileID: 100100000, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
 --- !u!4 &7703608308200891302 stripped
 Transform:
@@ -2676,7 +2676,7 @@ MonoBehaviour:
   combat: {fileID: 7703608308200891314}
   hurtboxManager: {fileID: 7703608308200891313}
   attackName: 
---- !u!114 &7703608308200891318
+--- !u!114 &7703608308200891322
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2688,17 +2688,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1d39423fc076b94da08327f5df3fb38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  target: {fileID: 4703547072117991408}
   approachDistance: 2.4
   attackDistance: 1.25
-  thinkInterval: 0.18
-  blockChanceWhenClose: 0.22
-  idleChanceWhenClose: 0.18
-  lightAttackChance: 0.55
+  thinkInterval: 0.26
+  blockChanceWhenClose: 0.14
+  idleChanceWhenClose: 0.28
+  lightAttackChance: 0.38
   jumpChance: 0.03
   disableHeavyAttack: 1
   reactiveBlockAgainstActiveAttack: 1
-  extraBlockChanceVsActiveAttack: 0.45
+  extraBlockChanceVsActiveAttack: 0.22
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
