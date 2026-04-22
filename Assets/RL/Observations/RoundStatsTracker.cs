@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.MLAgents;
 
 public class RoundStatsTracker : MonoBehaviour
 {
@@ -306,7 +307,23 @@ public class RoundStatsTracker : MonoBehaviour
         float avgPostBlockPunishes = windowRounds > 0 ? (float)windowPostBlockPunishes / windowRounds : 0f;
         float avgAttackAttempts = windowRounds > 0 ? (float)windowAttackAttempts / windowRounds : 0f;
         float avgWhiffs = windowRounds > 0 ? (float)windowWhiffs / windowRounds : 0f;
+        float hitRate = windowAttackAttempts > 0 ? (float)windowHitsDealt / windowAttackAttempts : 0f;
         float whiffRate = windowAttackAttempts > 0 ? (float)windowWhiffs / windowAttackAttempts : 0f;
+
+        RecordWindowStats(
+            winRate,
+            avgDuration,
+            avgHitsDealt,
+            avgHitsTaken,
+            hitDelta,
+            avgBlocksPerformed,
+            avgOwnAttacksBlockedByOpponent,
+            avgPostBlockPunishes,
+            avgAttackAttempts,
+            avgWhiffs,
+            hitRate,
+            whiffRate
+        );
 
         Debug.Log(
             $"[RoundStats Summary] Last {windowRounds} rounds | " +
@@ -317,6 +334,36 @@ public class RoundStatsTracker : MonoBehaviour
             $"AvgPostBlockPunishes={avgPostBlockPunishes:F2} | AvgAttackAttempts={avgAttackAttempts:F2} | " +
             $"AvgWhiffs={avgWhiffs:F2} | WhiffRate={whiffRate:P1}"
         );
+    }
+
+    private void RecordWindowStats(
+        float winRate,
+        float avgDuration,
+        float avgHitsDealt,
+        float avgHitsTaken,
+        float hitDelta,
+        float avgBlocksPerformed,
+        float avgOwnAttacksBlockedByOpponent,
+        float avgPostBlockPunishes,
+        float avgAttackAttempts,
+        float avgWhiffs,
+        float hitRate,
+        float whiffRate)
+    {
+        var stats = Academy.Instance.StatsRecorder;
+
+        stats.Add("Combat/WinRate", winRate);
+        stats.Add("Combat/AvgRoundDuration", avgDuration);
+        stats.Add("Combat/AvgHitsDealt", avgHitsDealt);
+        stats.Add("Combat/AvgHitsTaken", avgHitsTaken);
+        stats.Add("Combat/HitDelta", hitDelta);
+        stats.Add("Combat/AvgBlocksPerformed", avgBlocksPerformed);
+        stats.Add("Combat/AvgOwnAttacksBlockedByOpponent", avgOwnAttacksBlockedByOpponent);
+        stats.Add("Combat/AvgPostBlockPunishes", avgPostBlockPunishes);
+        stats.Add("Combat/AvgAttackAttempts", avgAttackAttempts);
+        stats.Add("Combat/AvgWhiffs", avgWhiffs);
+        stats.Add("Combat/HitRate", hitRate);
+        stats.Add("Combat/WhiffRate", whiffRate);
     }
 
     private void ResetWindowStats()
