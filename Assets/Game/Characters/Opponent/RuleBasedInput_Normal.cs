@@ -23,7 +23,7 @@ public class RuleBasedInput : MonoBehaviour
     public float jumpChance = 0.08f;
 
     [Tooltip("Disable heavy attacks for the rule-based opponent during training.")]
-    public bool disableHeavyAttack = true;
+    public bool disableHeavyAttack = false;
 
     private FighterController controller;
     private float thinkTimer;

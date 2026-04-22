@@ -13,6 +13,7 @@ public class RoundStatsTracker : MonoBehaviour
     public int summaryEveryNRounds = 20;
     public bool logEachRound = true;
     public bool logSummary = true;
+    public bool debugBlockedEvents = false;
 
     [Header("Derived Metrics")]
     [Tooltip("A hit landed by the tracked fighter within this window after a successful block counts as a post-block punish.")]
@@ -245,6 +246,18 @@ public class RoundStatsTracker : MonoBehaviour
     {
         if (!roundTrackingActive)
             return;
+
+        if (debugBlockedEvents)
+        {
+            bool ownAttackBlocked = attacker == trackedFighter && defender == opponentFighter;
+            string attackerName = attacker != null ? attacker.name : "null";
+            string defenderName = defender != null ? defender.name : "null";
+            string attackName = attackData != null ? attackData.attackName : "null";
+            Debug.Log(
+                $"[RoundStats Debug] BlockedEvent | attacker={attackerName} | defender={defenderName} | " +
+                $"attack={attackName} | ownAttackBlockedByOpponent={ownAttackBlocked}"
+            );
+        }
 
         if (defender == trackedFighter)
         {

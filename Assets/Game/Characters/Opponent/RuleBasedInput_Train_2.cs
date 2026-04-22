@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RuleBasedInput_Train_1 : MonoBehaviour
+public class RuleBasedInput_Train_2 : MonoBehaviour
 {
     [Header("Target")]
     public FighterController target;
@@ -11,6 +11,12 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
 
     [Tooltip("Primary training range where the opponent starts creating attack/block samples.")]
     public float attackDistance = 1.25f;
+
+    [Tooltip("Heavy attack is only sampled inside this conservative range.")]
+    public float heavyAttackMinDistance = 0.9f;
+
+    [Tooltip("Heavy attack is only sampled inside this conservative range.")]
+    public float heavyAttackMaxDistance = 1.25f;
 
     [Header("Timing")]
     [Tooltip("How often the opponent refreshes its high-level decision.")]
@@ -30,10 +36,14 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
     public float lightAttackChance = 0.38f;
 
     [Range(0f, 1f)]
+    [Tooltip("Small chance to use a heavy attack in range. Kept low so Train_2 stays close to Train_1.")]
+    public float heavyAttackChance = 0.03f;
+
+    [Range(0f, 1f)]
     [Tooltip("Chance to jump when close. Keep low to preserve grounded timing samples.")]
     public float jumpChance = 0.03f;
 
-    [Tooltip("Disable heavy attacks for this training opponent to keep the action distribution simple.")]
+    [Tooltip("Disable heavy attacks for this training opponent.")]
     public bool disableHeavyAttack = false;
 
     [Header("Pressure Response")]
@@ -147,6 +157,13 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
             return cmd;
         }
 
+        roll -= lightAttackChance;
+        if (CanSampleHeavyAttack(distance) && roll < heavyAttackChance)
+        {
+            cmd.heavyAttackPressed = true;
+            return cmd;
+        }
+
         cmd.move = Mathf.Sign(dx);
         return cmd;
     }
@@ -163,5 +180,19 @@ public class RuleBasedInput_Train_1 : MonoBehaviour
             return false;
 
         return Random.value < extraBlockChanceVsActiveAttack;
+    }
+
+    private bool CanSampleHeavyAttack(float distance)
+    {
+        if (disableHeavyAttack)
+            return false;
+
+        if (target == null)
+            return false;
+
+        if (target.CurrentAttackPhase != AttackPhase.None || target.IsInHitstun || target.IsInBlockstun)
+            return false;
+
+        return distance >= heavyAttackMinDistance && distance <= heavyAttackMaxDistance;
     }
 }

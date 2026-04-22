@@ -29,7 +29,7 @@ public class RuleBasedInput_Easy : MonoBehaviour
     public float idleChanceWhenClose = 0.45f;
 
     [Tooltip("Disable heavy attacks for the rule-based opponent during training.")]
-    public bool disableHeavyAttack = true;
+    public bool disableHeavyAttack = false;
 
     private FighterController controller;
     private float thinkTimer;

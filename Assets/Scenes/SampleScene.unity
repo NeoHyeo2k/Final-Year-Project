@@ -1426,6 +1426,7 @@ MonoBehaviour:
   summaryEveryNRounds: 20
   logEachRound: 1
   logSummary: 1
+  debugBlockedEvents: 0
   postBlockPunishWindow: 0.5
 --- !u!4 &1212141025
 Transform:
@@ -2197,14 +2198,14 @@ MonoBehaviour:
     footHitboxOffset: {x: 1, y: -0.6}
     footHitboxSize: {x: 1, y: 0.8}
   heavyAttack:
-    attackName: New Attack
+    attackName: Heavy Attack
     attackType: 0
-    startupTime: 0.12
-    activeTime: 0.08
-    recoveryTime: 0.18
-    damage: 1
-    hitstunTime: 0.15
-    pushbackForce: 2
+    startupTime: 0.28
+    activeTime: 0.1
+    recoveryTime: 0.36
+    damage: 2
+    hitstunTime: 0.28
+    pushbackForce: 3
     headHitboxOffset: {x: 1, y: 1}
     headHitboxSize: {x: 1, y: 1}
     bodyHitboxOffset: {x: 1, y: 0.4}
@@ -2276,7 +2277,7 @@ MonoBehaviour:
   lightAttackMaxDistance: 2.2
   heavyAttackMinDistance: 0.9
   heavyAttackMaxDistance: 2.2
-  disableHeavyAttack: 1
+  disableHeavyAttack: 0
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2399,7 +2400,7 @@ MonoBehaviour:
   self: {fileID: 4703547072117991408}
   matchManager: {fileID: 243370608}
   successfulBlockReward: 0.05
-  postBlockPunishReward: 0
+  postBlockPunishReward: 0.03
   postBlockPunishWindow: 0.5
   requireRoundActive: 1
   debugLog: 0
@@ -2521,7 +2522,7 @@ PrefabInstance:
       addedObject: {fileID: 7703608308200891312}
     - targetCorrespondingSourceObject: {fileID: 2111095038228447074, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7703608308200891322}
+      addedObject: {fileID: 7703608308200891326}
   m_SourcePrefab: {fileID: 100100000, guid: 2dacb037f3a5d5745a8a0d5e92e75e5a, type: 3}
 --- !u!4 &7703608308200891302 stripped
 Transform:
@@ -2647,14 +2648,14 @@ MonoBehaviour:
     footHitboxOffset: {x: 1, y: -0.6}
     footHitboxSize: {x: 1, y: 0.8}
   heavyAttack:
-    attackName: New Attack
+    attackName: Heavy Attack
     attackType: 0
-    startupTime: 0.12
-    activeTime: 0.08
-    recoveryTime: 0.18
-    damage: 1
-    hitstunTime: 0.15
-    pushbackForce: 2
+    startupTime: 0.28
+    activeTime: 0.1
+    recoveryTime: 0.36
+    damage: 2
+    hitstunTime: 0.28
+    pushbackForce: 3
     headHitboxOffset: {x: 1, y: 1}
     headHitboxSize: {x: 1, y: 1}
     bodyHitboxOffset: {x: 1, y: 0.4}
@@ -2666,17 +2667,17 @@ MonoBehaviour:
   blockPushMultiplier: 0.35
   enableInputBuffer: 1
   inputBufferTime: 0.15
-  groundCheck: {fileID: 0}
+  groundCheck: {fileID: 1867594951}
   groundCheckRadius: 0.2
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   motor: {fileID: 7703608308200891316}
   stateMachine: {fileID: 7703608308200891315}
   combat: {fileID: 7703608308200891314}
   hurtboxManager: {fileID: 7703608308200891313}
   attackName: 
---- !u!114 &7703608308200891322
+--- !u!114 &7703608308200891326
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2685,18 +2686,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 739359083}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1d39423fc076b94da08327f5df3fb38, type: 3}
+  m_Script: {fileID: 11500000, guid: 60dbd7fbb1c44a64a9f00e5f513f0d86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4703547072117991408}
   approachDistance: 2.4
   attackDistance: 1.25
+  heavyAttackMinDistance: 0.9
+  heavyAttackMaxDistance: 1.25
   thinkInterval: 0.26
-  blockChanceWhenClose: 0.14
+  blockChanceWhenClose: 0.22
   idleChanceWhenClose: 0.28
   lightAttackChance: 0.38
+  heavyAttackChance: 0.03
   jumpChance: 0.03
-  disableHeavyAttack: 1
+  disableHeavyAttack: 0
   reactiveBlockAgainstActiveAttack: 1
   extraBlockChanceVsActiveAttack: 0.22
 --- !u!1660057539 &9223372036854775807
