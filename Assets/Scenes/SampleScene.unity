@@ -2277,7 +2277,7 @@ MonoBehaviour:
   lightAttackMaxDistance: 2.2
   heavyAttackMinDistance: 0.9
   heavyAttackMaxDistance: 2.2
-  disableHeavyAttack: 0
+  disableHeavyAttack: 1
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2700,7 +2700,7 @@ MonoBehaviour:
   lightAttackChance: 0.38
   heavyAttackChance: 0.03
   jumpChance: 0.03
-  disableHeavyAttack: 0
+  disableHeavyAttack: 1
   reactiveBlockAgainstActiveAttack: 1
   extraBlockChanceVsActiveAttack: 0.22
 --- !u!1660057539 &9223372036854775807
