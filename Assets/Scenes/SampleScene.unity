@@ -2172,12 +2172,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac65ebf7240dc6e428725382672f9598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 6.5
-  jumpForce: 15.6
+  moveSpeed: 5
+  jumpForce: 13
   maxJumpCount: 2
   doubleTapWindow: 0.25
-  dashSpeed: 15.6
-  dashDuration: 0.135
+  dashSpeed: 12
+  dashDuration: 0.15
   allowAirDash: 1
   airDashWindow: 0.15
   maxAirDashCount: 1
@@ -2277,7 +2277,7 @@ MonoBehaviour:
   lightAttackMaxDistance: 2.2
   heavyAttackMinDistance: 0.9
   heavyAttackMaxDistance: 2.2
-  disableHeavyAttack: 1
+  disableHeavyAttack: 0
   debugActionReceived: 0
 --- !u!114 &4703547072117991414
 MonoBehaviour:
@@ -2622,12 +2622,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac65ebf7240dc6e428725382672f9598, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 6.5
-  jumpForce: 15.6
+  moveSpeed: 5
+  jumpForce: 13
   maxJumpCount: 2
   doubleTapWindow: 0.25
-  dashSpeed: 15.6
-  dashDuration: 0.135
+  dashSpeed: 12
+  dashDuration: 0.15
   allowAirDash: 1
   airDashWindow: 0.15
   maxAirDashCount: 1
@@ -2700,7 +2700,7 @@ MonoBehaviour:
   lightAttackChance: 0.38
   heavyAttackChance: 0.03
   jumpChance: 0.03
-  disableHeavyAttack: 1
+  disableHeavyAttack: 0
   reactiveBlockAgainstActiveAttack: 1
   extraBlockChanceVsActiveAttack: 0.22
 --- !u!1660057539 &9223372036854775807
